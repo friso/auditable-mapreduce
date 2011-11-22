@@ -1,0 +1,4 @@
+{
+	"name":"uuid",
+	"main":"./uuid.js"
+}

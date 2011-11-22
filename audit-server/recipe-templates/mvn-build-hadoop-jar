@@ -1,0 +1,2 @@
+mvn clean install
+hadoop jar target/<%=jarFile%> <%=args.join(' ')%>

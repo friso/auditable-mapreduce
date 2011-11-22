@@ -1,0 +1,4 @@
+{
+	"name":"hconf",
+	"main":"./hconf.js"
+}
