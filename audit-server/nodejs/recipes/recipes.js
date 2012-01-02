@@ -10,7 +10,7 @@ module.exports.createRecipe = function(templateFilename, templateVars, workingDi
 }
 
 function Recipe(templateFilename, templateVars, workingDir, shellCommand, callback) {
-	this.template = templater.create(fs.readFileSync(templateFilename).toString('utf-8'))
+	this.template = templater.create(fs.readFileSync(templateFilename).toString('utf8'))
 	this.templateVars = templateVars
 	this.cwd = workingDir
 	this.command = shellCommand
@@ -25,7 +25,7 @@ function Recipe(templateFilename, templateVars, workingDir, shellCommand, callba
 				if (code == 0) {
 					self.callback(null)
 				} else {
-					self.callback(code)
+					self.callback({"code":code, "msg":"Recipe execution produced a non-zero exit code."})
 				}
 			})
 		proc.stdout.on('data', function(d) { self.emit('output', d) })

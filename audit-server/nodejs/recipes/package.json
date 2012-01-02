@@ -1,4 +1,4 @@
 {
-	"name":"recipe",
+	"name":"recipes",
 	"main":"./recipes.js"
 }
