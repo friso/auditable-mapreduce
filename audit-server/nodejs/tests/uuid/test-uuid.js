@@ -1,4 +1,4 @@
-var UUID = require('../../nodejs/lib/uuid/uuid')
+var UUID = require('../../lib/uuid/uuid')
 
 exports.uuidShouldbeUnique = function(test){
     test.expect(1);
