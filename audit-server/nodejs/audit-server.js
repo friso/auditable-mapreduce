@@ -28,3 +28,5 @@ app.post('/recipe/:recipe/:user/run', routes.runRecipe)
 
 app.listen(9090);
 console.log("Audit server listening on port %d in %s mode", app.address().port, app.settings.env);
+
+process.send({"status": "running", "port" : app.address().port })

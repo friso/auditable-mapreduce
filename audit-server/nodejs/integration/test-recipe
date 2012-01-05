@@ -1,0 +1,3 @@
+echo "It works beautifully well!"
+echo <%=singleParam%>
+echo <%=arrayParam.join(' ')%>

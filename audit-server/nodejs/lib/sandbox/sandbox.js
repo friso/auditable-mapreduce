@@ -1,7 +1,5 @@
 var util = require('util')
 var events = require('events')
-var fs = require('fs')
-var childproc = require('child_process')
 
 module.exports.createSandbox = function(uuid, user, gitRepo, gitTree) {
 	return new Sandbox(uuid, user, gitRepo, gitTree)
