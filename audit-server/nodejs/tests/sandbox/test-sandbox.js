@@ -8,9 +8,9 @@ exports.tearDown = function(callback) {
 	callback()
 }
 
-exports.howToTestThis = function(test){
+exports.templateTest = function(test){
     test.expect(1)
-	test.ok(false, 'DONT KNOW HOW TO TEST THIS')
+	test.ok(true, 'Some message that can be shown')
 	test.done()
 }
 

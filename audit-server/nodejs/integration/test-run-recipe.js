@@ -24,7 +24,6 @@ exports.setUp = function(callback) {
 	server = cp.fork(__dirname + '/../audit-server.js')
 	server.on('message',
 		function(m) {
-			console.log("Got message from server: " + JSON.stringify(m))
 			serverPort = m.port
 			callback()
 		})
@@ -82,7 +81,36 @@ exports.shouldRespondWithBadRequestOnMissingHeader = function(test) {
 		
 	    test.expect(2)
 		test.equals(res.statusCode, 400, 'Response code != 400')
-		test.equals(resData, 'Missing signature request header (X-AuditSignature)')
+		test.equals(resData, 'Missing signature request header (X-AuditSignature).')
+		test.done()
+	}
+	
+	doPostRequest(options, JSON.stringify(data), runAsserts)
+}
+
+exports.shouldRespondWithBadRequestOnWrongSignature = function(test) {
+	var options = {
+		port : serverPort,
+		method: 'POST',
+		path : '/recipe/test-recipe/test-user/run?url=' + encodeURIComponent('ssh://git@localhost/~/repo') + '&tree=3a29641aa99c20320f184d2e0108f3ce9005d8f0'
+	}
+	
+	var data = {
+		recipevars : { singleParam : 'single', arrayParam : ['I', 'brought', 'multiple.'] },
+		hconf : { 'fs.default.name' : 'hdfs://localhost:8020/' }
+	}
+	
+	addSignature(options, JSON.stringify(data))
+	if (options.headers) {
+		options.headers['X-AuditSignature'] = options.headers['X-AuditSignature'] + 'SPECIMEN'
+	}
+	
+	function runAsserts(res, resData) {
+		console.log(resData)
+		
+	    test.expect(2)
+		test.equals(res.statusCode, 404, 'Response code != 404')
+		test.equals(resData, 'Signature did not match.')
 		test.done()
 	}
 	
@@ -159,7 +187,7 @@ exports.shouldRespondWithBadRequestOnInvalidQuery = function(test) {
 		
 	    test.expect(2)
 		test.equals(res.statusCode, 400, 'Response code != 400')
-		test.equals(resData, 'Missing request parameter')
+		test.equals(resData, 'Missing request parameter.')
 		test.done()
 	}
 	

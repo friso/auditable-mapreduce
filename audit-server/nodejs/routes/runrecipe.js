@@ -26,27 +26,9 @@ function RecipeRunner(request, response) {
 	
 	this.run = function() {
 		self.once('verified', createSandbox)
-		self.once('notverified', function() {
-			this.response.writeHead(200, { 'Content-Type':'text/plain'})
-			this.response.end('Hello, World!\n'+
-				'  user '+self.user+' requested\n'+ 
-				'  -- recipe '+self.recipeName+'\n'+ 
-				'  -- giturl ['+self.gitRepo+']\n'+ 
-				'  -- tree ['+self.gitTree+']\n'+
-				'  -- data ['+self.requestData+']\n'+
-				'    -- vars ['+JSON.stringify(self.recipeVariables)+']\n'+
-				getRecipeVars()
-				+
-				'    -- hconf ['+self.config+']\n'+
-				' but verification was NOT good\n\n')
-		
-			function getRecipeVars() {
-				var result = ''
-				for (variable in self.recipeVariables) {
-					result += '    	-- var '+variable+':'+self.recipeVariables[variable]+'\n'
-				}
-				return result
-			}
+		self.once('notverified', function(statusCode, message) {
+			this.response.writeHead(statusCode, { 'Content-Type':'text/plain'})
+			this.response.end(message)
 		})
 	
 		populateFromRequest(request, response)
@@ -62,7 +44,6 @@ function RecipeRunner(request, response) {
 			// })
 			// 
 			// sandbox.build()
-			console.log("Good job on the request!")
 		}
 
 		function populateFromRequest(req, res) {
@@ -70,39 +51,50 @@ function RecipeRunner(request, response) {
 			req.on('data', function(data) { d += data })
 			req.on('end' , function() {
 				self.url = req.url
-				self.user = req.params['user']
-				self.gitRepo = req.query['url']
-				self.gitTree = req.query['tree']
-				self.recipeName = req.params['recipe']
+				self.user = req.params['user'] || ''
+				self.gitRepo = req.query['url'] || ''
+				self.gitTree = req.query['tree'] || ''
+				self.recipeName = req.params['recipe'] || ''
 				self.requestData = d
 				var dataObject = JSON.parse(self.requestData)
-				self.recipeVariables = dataObject['recipevars']
-				self.config = dataObject['hconf']
+				self.recipeVariables = dataObject['recipevars'] || ''
+				self.config = dataObject['hconf'] || ''
 	
 	    		var requestObject =	self.url + d
 		    	var signature = req.header('X-AuditSignature') || ''
-				fs.stat(__dirname + '/../../keys/'+self.user+'.pem', function(err) {
-				    var pem
-					if (err) {
-						pem = ''
-					} else {
-						pem = fs.readFileSync(__dirname + '/../../keys/'+self.user+'.pem')
-					}
-					var publicKey = pem.toString('ascii')
-					
-					verify(requestObject, publicKey, signature)
-				})
+		    	
+		    	verify(requestObject, signature)
 	    	})
 		}
 
-		function verify(requestObject, publicKey, signature) {
-			var verifier = crypto.createVerify('RSA-SHA256')
-			verifier.update(requestObject)
-			if (verifier.verify(publicKey, signature, 'base64')) {
-				self.emit('verified')
+		function verify(requestObject, signature) {
+			if (!signature) {
+				self.emit('notverified', 400, 'Missing signature request header (X-AuditSignature).')
+			} else if (!self.recipeVariables || self.recipeVariables == null || self.recipeVariables.length === 0) {
+				self.emit('notverified', 400, 'Request body contains invalid or missing data.')
+			} else if (!self.config || self.config == null || self.config.length === 0) {
+				self.emit('notverified', 400, 'Request body contains invalid or missing data.')
+			} else if (!self.gitRepo || self.gitRepo == null || self.gitRepo.length === 0) {
+				self.emit('notverified', 400, 'Missing request parameter.')
 			} else {
-				self.emit('notverified')
-			}	
+				fs.stat(__dirname + '/../../keys/'+self.user+'.pem', function(err) {
+				    var pem
+					if (err) {
+						self.emit('notverified', 404, 'User '+self.user+' cannot be found on this server.')
+					} else {
+						pem = fs.readFileSync(__dirname + '/../../keys/'+self.user+'.pem')
+						var publicKey = pem.toString('ascii')
+					
+						var verifier = crypto.createVerify('RSA-SHA256')
+						verifier.update(requestObject)
+						if (verifier.verify(publicKey, signature, 'base64')) {
+							self.emit('verified')
+						} else {
+							self.emit('notverified', 404, 'Signature did not match.')
+						}
+					}
+				})
+			}
 		}
 	}
 }
