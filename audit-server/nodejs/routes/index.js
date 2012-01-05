@@ -3,3 +3,4 @@ exports.index = function(req, res) {
 };
 
 exports.runRecipe = require('./runrecipe.js')
+exports.challenge = require('./challenge.js')

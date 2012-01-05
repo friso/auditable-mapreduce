@@ -26,7 +26,12 @@ app.get('/', routes.index);
 //run recipe
 app.post('/recipe/:recipe/:user/run', routes.runRecipe)
 
+//challenge - response
+app.get('/challenge/:user/:token/:jarname/:sha1', routes.challenge)
+
 app.listen(9090);
 console.log("Audit server listening on port %d in %s mode", app.address().port, app.settings.env);
 
-process.send({"status": "running", "port" : app.address().port })
+if (process.send) {
+	process.send({"status": "running", "port" : app.address().port })
+}

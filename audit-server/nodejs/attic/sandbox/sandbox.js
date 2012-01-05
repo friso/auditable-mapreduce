@@ -25,7 +25,7 @@ function Sandbox(uuid, container, gitRepo, callback, gitTree) {
 		self.once('gitready', function() {
 			//git is done, this should spawn all the config creation stuff
 			//and when that is ready, it's time for the callback
-			self.callback(null, dir)
+			self.callback(undefined, dir)
 		})
 		
 		//do git clone
