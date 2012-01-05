@@ -6,5 +6,7 @@
       "express": "2.5.1"
     , "jade": ">= 0.0.1"
   }
-  , "scripts": { "test" : "bash tests.sh" }
+  , "scripts": { "test" : "bash tests.sh"
+               , "integration" : "bash integration-tests.sh"
+  }
 }
