@@ -6,6 +6,7 @@
       "express": "2.5.1"
     , "jade": ">= 0.0.1"
     , "commander": "0.5.1"
+    , "rimraf": "1.0.9"
   }
   , "scripts": { "test" : "bash tests.sh"
                , "integration" : "bash integration-tests.sh"
