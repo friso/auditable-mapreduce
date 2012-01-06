@@ -9,7 +9,7 @@ function addSignature(options, data) {
 	var sign = crypto.createSign('RSA-SHA256')
 	sign.update(options.path + data)
 	var signature = sign.sign(
-		fs.readFileSync(__dirname + '/test-user-private.pem', 'ascii'),
+		fs.readFileSync(__dirname + '/keys/test-user-private.pem', 'ascii'),
 		'base64')
 	
 	if (options.headers) {
@@ -21,7 +21,9 @@ function addSignature(options, data) {
 
 exports.setUp = function(callback) {
 	var cp = require('child_process')
-	server = cp.fork(__dirname + '/../audit-server.js')
+	server = cp.fork(
+		__dirname + '/../audit-server.js', 
+		('-k ' + __dirname + '/keys -s ' + __dirname + '/sandbox -r ' + __dirname + '/recipe-templates -w ' + __dirname + '/whitelist').split(' '))
 	server.on('message',
 		function(m) {
 			serverPort = m.port

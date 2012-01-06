@@ -1,15 +1,28 @@
 var express = require('express')
 var routes = require('./routes')
 
+var program = require('commander')
+program
+	.version('0.0.1')
+	.usage('<options>')
+	.option('-k, --keydir <keydir>', 'Override the default keys direcotry user to find users\' public keys.')
+	.option('-s, --sandboxdir <sandboxdir>', 'Override the default location that audit server uses to manage sandboxes.')
+	.option('-r, --recipedir <recipedir>', 'Override the default location for storing runnable recipes.')
+	.option('-w, --whitelistdir <whitelistdir>', 'Override the default location for keeping whitelisted jars (i.e. trusted jars, always OK to schedule).')
+	.parse(process.argv)
+
 global.auditserver = {
 	config : {
 		basedir : __dirname,
-		keydir : __dirname + '/../keys/',
-		recipedir : __dirname + '/../recipe-templates/',
-		sandboxdir : __dirname + '/../sandbox/',
-		whitelistdir : __dirname + '/../whitelist/'
+		keydir : program.keydir || __dirname + '/../keys/',
+		recipedir : program.recipedir || __dirname + '/../recipe-templates/',
+		sandboxdir : program.sandboxdir || __dirname + '/../sandbox/',
+		whitelistdir : program.whitelistdir || __dirname + '/../whitelist/'
 	}
 }
+
+console.log('Audit server starting...')
+console.log('config = ' + JSON.stringify(auditserver.config, null, 4))
 
 var app = module.exports = express.createServer()
 
@@ -20,18 +33,18 @@ app.configure(function(){
   app.use(express.methodOverride())
   app.use(app.router)
   app.use(express.static(__dirname + '/public'))
-});
+})
 
 app.configure('development', function() {
   app.use(express.errorHandler({ dumpExceptions: true, showStack: true })); 
-});
+})
 
 app.configure('production', function() {
   app.use(express.errorHandler()); 
-});
+})
 
 // Main page
-app.get('/', routes.index);
+app.get('/', routes.index)
 
 //run recipe
 app.post('/recipe/:recipe/:user/run', routes.runRecipe)
@@ -40,7 +53,7 @@ app.post('/recipe/:recipe/:user/run', routes.runRecipe)
 app.get('/challenge/:user/:token/:jarname/:sha1', routes.challenge)
 
 app.listen(9090);
-console.log("Audit server listening on port %d in %s mode", app.address().port, app.settings.env);
+console.log("Audit server listening on port %d in %s mode", app.address().port, app.settings.env)
 
 if (process.send) {
 	process.send({"status": "running", "port" : app.address().port })

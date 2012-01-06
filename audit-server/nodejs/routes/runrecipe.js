@@ -65,12 +65,12 @@ function RecipeRunner(request, response) {
 			} else if (!self.gitRepo || self.gitRepo == null || self.gitRepo.length === 0) {
 				self.emit('notverified', 400, 'Missing request parameter.')
 			} else {
-				fs.stat(auditserver.config.keydir+self.user+'.pem', function(err) {
+				fs.stat(auditserver.config.keydir+ '/' + self.user+'.pem', function(err) {
 				    var pem
 					if (err) {
 						self.emit('notverified', 404, 'User '+self.user+' cannot be found on this server.')
 					} else {
-						pem = fs.readFileSync(auditserver.config.keydir+self.user+'.pem')
+						pem = fs.readFileSync(auditserver.config.keydir + '/' + self.user+'.pem')
 						var publicKey = pem.toString('ascii')
 					
 						var verifier = crypto.createVerify('RSA-SHA256')
