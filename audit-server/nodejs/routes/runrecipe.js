@@ -3,6 +3,7 @@ var events = require('events')
 var crypto = require('crypto')
 var fs = require('fs')
 var UUID = require('../lib/uuid/uuid')
+var sandbox = require('../lib/sandbox/sandbox')
 
 module.exports = function(req, res) {
 	var recipeRunner = new RecipeRunner(req, res);
@@ -25,26 +26,13 @@ function RecipeRunner(request, response) {
 	var self = this
 	
 	this.run = function() {
-		self.once('verified', createSandbox)
+		self.once('verified', populateSandbox)
 		self.once('notverified', function(statusCode, message) {
 			this.response.writeHead(statusCode, { 'Content-Type':'text/plain'})
 			this.response.end(message)
 		})
 	
 		populateFromRequest(request, response)
-
-		function createSandbox() {
-			self.response.writeHead(500)
-			self.response.write('Not yet imlpemented.')
-			self.response.end()
-			// var token =	UUID.generate()
-			// var sandbox = createSandbox(token, self.user, self.gitRepo, self.gitTree)
-			// sandbox.on('ready', function() {
-			// 	console.log('TODO Sandbox ready method')
-			// })
-			// 
-			// sandbox.build()
-		}
 
 		function populateFromRequest(req, res) {
 			var d = '';
@@ -77,12 +65,12 @@ function RecipeRunner(request, response) {
 			} else if (!self.gitRepo || self.gitRepo == null || self.gitRepo.length === 0) {
 				self.emit('notverified', 400, 'Missing request parameter.')
 			} else {
-				fs.stat(__dirname + '/../../keys/'+self.user+'.pem', function(err) {
+				fs.stat(auditserver.config.keydir+self.user+'.pem', function(err) {
 				    var pem
 					if (err) {
 						self.emit('notverified', 404, 'User '+self.user+' cannot be found on this server.')
 					} else {
-						pem = fs.readFileSync(__dirname + '/../../keys/'+self.user+'.pem')
+						pem = fs.readFileSync(auditserver.config.keydir+self.user+'.pem')
 						var publicKey = pem.toString('ascii')
 					
 						var verifier = crypto.createVerify('RSA-SHA256')
@@ -95,6 +83,24 @@ function RecipeRunner(request, response) {
 					}
 				})
 			}
+		}
+		
+		function populateSandbox() {
+			self.response.writeHead(200)
+
+			var token =	UUID.generate()
+			var box = sandbox.createSandbox(token, self.user, self.gitRepo, self.gitTree)
+			box.on('output', function(data) {
+				self.response.write('Output redirect of sandbox: Not yet imlpemented.')
+			})
+			 
+			box.build(createAndRunRecipe)
+		}
+
+		function createAndRunRecipe(err, data) {
+			self.response.write('createAndRunRecipe: Not yet imlpemented.')
+			
+			self.response.end()
 		}
 	}
 }

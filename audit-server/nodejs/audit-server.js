@@ -1,6 +1,16 @@
 var express = require('express')
 var routes = require('./routes')
 
+global.auditserver = {
+	config : {
+		basedir : __dirname,
+		keydir : __dirname + '/../keys/',
+		recipedir : __dirname + '/../recipe-templates/',
+		sandboxdir : __dirname + '/../sandbox/',
+		whitelistdir : __dirname + '/../whitelist/'
+	}
+}
+
 var app = module.exports = express.createServer()
 
 // Configuration
