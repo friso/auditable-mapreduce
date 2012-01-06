@@ -5,19 +5,22 @@ var program = require('commander')
 program
 	.version('0.0.1')
 	.usage('<options>')
+	.option('-b, --basedir <basedir>', 'Override the audit server basedir. Using -ksrw takes priority over the default basedir relative paths.')
 	.option('-k, --keydir <keydir>', 'Override the default keys direcotry user to find users\' public keys.')
 	.option('-s, --sandboxdir <sandboxdir>', 'Override the default location that audit server uses to manage sandboxes.')
 	.option('-r, --recipedir <recipedir>', 'Override the default location for storing runnable recipes.')
 	.option('-w, --whitelistdir <whitelistdir>', 'Override the default location for keeping whitelisted jars (i.e. trusted jars, always OK to schedule).')
 	.parse(process.argv)
 
+var bd = program.basedir || __dirname + '/..'
+
 global.auditserver = {
 	config : {
-		basedir : __dirname,
-		keydir : program.keydir || __dirname + '/../keys/',
-		recipedir : program.recipedir || __dirname + '/../recipe-templates/',
-		sandboxdir : program.sandboxdir || __dirname + '/../sandbox/',
-		whitelistdir : program.whitelistdir || __dirname + '/../whitelist/'
+		basedir : bd,
+		keydir : program.keydir || bd + '/keys/',
+		recipedir : program.recipedir || bd + '/recipe-templates/',
+		sandboxdir : program.sandboxdir || bd + '/sandbox/',
+		whitelistdir : program.whitelistdir || bd + '/whitelist/'
 	}
 }
 
