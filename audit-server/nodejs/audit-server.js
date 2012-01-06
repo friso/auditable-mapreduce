@@ -12,15 +12,15 @@ program
 	.option('-w, --whitelistdir <whitelistdir>', 'Override the default location for keeping whitelisted jars (i.e. trusted jars, always OK to schedule).')
 	.parse(process.argv)
 
-var bd = program.basedir || __dirname
+var bd = program.basedir || __dirname + '/..'
 
 global.auditserver = {
 	config : {
 		basedir : bd,
-		keydir : program.keydir || bd + '/../keys/',
-		recipedir : program.recipedir || bd + '/../recipe-templates/',
-		sandboxdir : program.sandboxdir || bd + '/../sandbox/',
-		whitelistdir : program.whitelistdir || bd + '/../whitelist/'
+		keydir : program.keydir || bd + '/keys/',
+		recipedir : program.recipedir || bd + '/recipe-templates/',
+		sandboxdir : program.sandboxdir || bd + '/sandbox/',
+		whitelistdir : program.whitelistdir || bd + '/whitelist/'
 	}
 }
 

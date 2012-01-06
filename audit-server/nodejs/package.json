@@ -6,6 +6,7 @@
       "express": "2.5.1"
     , "jade": ">= 0.0.1"
     , "commander": "0.5.1"
+	, "seq" : ">=0.1.7"
   }
   , "scripts": { "test" : "bash tests.sh"
                , "integration" : "bash integration-tests.sh"

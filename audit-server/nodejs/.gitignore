@@ -1,3 +1,4 @@
 node_modules/*
 !node_modules/node-template
+!node_modules/findit
 npm-debug.log
