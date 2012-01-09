@@ -1,4 +1,4 @@
-var auditlog = require('../../lib/auditlog/auditlog')
+var auditlog = require('../../lib/auditlog')
 var fs = require('fs')
 var logger, validAuditlogRecord, invalidAuditlogRecord;
 

@@ -52,24 +52,25 @@ function MessageHandler(user) {
 	this.handleChildProcessMessage = function(message) {
 		switch(message.type) {
 			case 'HANDLER_READY':
-				children[self.user].send({
+				console.log('got Handler ready, sending config for '+self.user)
+				auditserver.children[self.user].send({
 					type : 'CONFIGURATION',
 					config : auditserver.config
 				})
 				break
 			case 'OUTPUT':
 				auditserver.emitters[message.token].emit('output', message)
-				break;
+				break
 			case 'REQUEST_END':
 				auditserver.emitters[message.token].emit('end', message)
-				break;
+				break
 		}
 	}
 	
 }
 
 console.log('Audit server starting...')
-console.log('config = ' + JSON.stringify(auditserver.config, null, 4))
+//console.log('config = ' + JSON.stringify(auditserver.config, null, 4))
 
 var app = module.exports = express.createServer()
 

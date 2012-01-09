@@ -1,4 +1,4 @@
-var sandbox = require('../../lib/sandbox/sandbox')
+var sandbox = require('../../lib/sandbox')
 var fs = require('fs')
 var childproc = require('child_process')
 
@@ -79,7 +79,7 @@ exports.shouldFailOnUnknownGitUrlWhileCreatingASandbox = function(test) {
 	
 	function runAsserts(err) {
 	    test.expect(1)
-		test.notEqual(err, null)
+		test.deepEqual(err, { code: 128, msg: 'git clone failed.' })
 		test.done()
 	}
 }
@@ -90,7 +90,7 @@ exports.shouldFailOnUnknownTreeWhileCreatingASandbox = function(test) {
 	
 	function runAsserts(err) {
 	    test.expect(1)
-		test.notEqual(err, null)
+		test.deepEqual(err, { code: 128, msg: 'git checkout failed.' })
 		test.done()
 	}
 }

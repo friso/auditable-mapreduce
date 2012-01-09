@@ -29,9 +29,13 @@ if (process.getuid() == 0) {
 process.on('message', function(m) {
 	switch(m.type) {
 		case 'CONFIGURATION':
+			console.log('got config '+m.config)
+
 			global.auditserver.config = m.config
+			console.log('AUDITSERVER['+process.pid+']:'+JSON.stringify(auditserver))
 			break
 		case 'HANDLE_REQUEST':
+			console.log('got handle request for '+m.user+' ['+process.pid+']')
 			var handler = new RequestHandler(m)
 			handler.handleRequest()
 			break

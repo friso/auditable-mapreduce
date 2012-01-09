@@ -16,12 +16,11 @@ function Sandbox(uuid, user, gitRepo, gitTree) {
 	
 	this.build = function(callback) {
 		
-		var sandboxDir = auditserver.config.sandboxdir+ '/' + self.user + '-' + self.uuid
-		fs.mkdir(sandboxDir, '0777', function(err) {
+		fs.mkdir(self.getDir(), '0777', function(err) {
 			childproc.execFile(
 				'/usr/bin/git', 
-				['clone', self.gitRepo, sandboxDir + '/checkout'],
-				{ "cwd" : sandboxDir }
+				['clone', self.gitRepo, self.getDir() + '/checkout'],
+				{ "cwd" : self.getDir() }
 			).on('exit', handleGitCloneReady)
 		})
 	
@@ -36,7 +35,7 @@ function Sandbox(uuid, user, gitRepo, gitTree) {
 				childproc.execFile(
 					'/usr/bin/git', 
 					['checkout', self.gitTree],
-					{ "cwd" : sandboxDir + '/checkout' }
+					{ "cwd" : self.getDir() + '/checkout' }
 				).on('exit', handleGitCheckoutReady)
 			} else {
 				callback()
@@ -53,7 +52,7 @@ function Sandbox(uuid, user, gitRepo, gitTree) {
 	}
 	
 	this.cleanup = function(callback) {
-		removeRecursively(auditserver.config.sandboxdir + '/' + self.user + '-' + self.uuid, {}, callback)
+		removeRecursively(self.getDir(), {}, callback)
 	}
 	
 	this.getDir = function() {

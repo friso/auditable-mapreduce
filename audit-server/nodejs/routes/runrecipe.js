@@ -2,8 +2,8 @@ var util = require('util')
 var events = require('events')
 var crypto = require('crypto')
 var fs = require('fs')
-var UUID = require('../lib/uuid/uuid')
-var sandbox = require('../lib/sandbox/sandbox')
+var UUID = require('../lib/uuid')
+var sandbox = require('../lib/sandbox')
 
 module.exports = function(req, res) {
 	var recipeRunner = new RecipeRunner(req, res);
@@ -85,22 +85,31 @@ function RecipeRunner(request, response) {
 			}
 		}
 		
-		function populateSandbox() {
-			self.response.writeHead(200)
-			
+		function populateSandbox() {			
 			var token =	UUID.generate()
-			var box = sandbox.createSandbox(token, self.user, self.gitRepo, self.gitTree)
-			box.on('output', function(data) {
-				self.response.write('Output redirect of sandbox: Not yet imlpemented.')
-			})
-			 
-			box.build(createAndRunRecipe)
+			var request = {
+				type : 'HANDLE_REQUEST',
+				token : token,
+				user : self.user,
+				gitRepo : self.gitRepo,
+				gitTree : self.gitTree,
+				recipeName : self.recipeName,
+				recipeVariables : self.recipeVariables,
+				hconf : self.config
+			}
+			
+			auditserver.children[self.user].send(request)			
 		}
 
-		function createAndRunRecipe(err, data) {
-			self.response.write('createAndRunRecipe: Not yet imlpemented.')
-			
-			self.response.end()
+		function createAndRunRecipe(err) {
+			if (err) {
+				self.response.writeHead(500, { 'Content-Type':'text/plain'})
+				self.response.end(err)
+			} else {
+				self.response.writeHead(200, { 'Content-Type':'text/plain'})
+				self.response.write('createAndRunRecipe: Not yet imlpemented.')
+				self.response.end()
+			}
 		}
 	}
 }
