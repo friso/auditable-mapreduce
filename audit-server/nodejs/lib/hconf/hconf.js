@@ -1,7 +1,7 @@
 module.exports.writeHadoopConfiguration = function(configuration, filename, callback) {
 	var libxml = require('libxmljs')
 	
-	var doc = libxml.Document.new()
+	var doc = new libxml.Document()
 	var rootNode = doc.node('configuration')
 	for (var propertyName in configuration) {
 		var propertyNode = rootNode.node('property')

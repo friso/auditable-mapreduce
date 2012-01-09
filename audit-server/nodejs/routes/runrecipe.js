@@ -87,7 +87,7 @@ function RecipeRunner(request, response) {
 		
 		function populateSandbox() {
 			self.response.writeHead(200)
-
+			
 			var token =	UUID.generate()
 			var box = sandbox.createSandbox(token, self.user, self.gitRepo, self.gitTree)
 			box.on('output', function(data) {

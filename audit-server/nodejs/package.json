@@ -8,6 +8,7 @@
     , "commander": "0.5.1"
     , "rimraf": "1.0.9"
     , "seq" : ">=0.1.7"
+	, "libxmljs": "0.4.3"
   }
   , "scripts": { "test" : "bash tests.sh"
                , "integration" : "bash integration-tests.sh"

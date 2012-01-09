@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration><property><name>mapred.job.tracker</name><value>bnltapp1:8021</value></property><property><name>mapred.map.tasks.speculative.execution</name><value>false</value></property><property><name>mapred.output.compress</name><value>true</value></property></configuration>

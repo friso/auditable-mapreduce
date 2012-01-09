@@ -1,7 +1,12 @@
+var events = require('events')
+var fs = require('fs')
+var cp = require('child_process')
+
 var express = require('express')
+var program = require('commander')
+
 var routes = require('./routes')
 
-var program = require('commander')
 program
 	.version('0.0.1')
 	.usage('<options>')
@@ -21,7 +26,46 @@ global.auditserver = {
 		recipedir : program.recipedir || bd + '/recipe-templates/',
 		sandboxdir : program.sandboxdir || bd + '/sandbox/',
 		whitelistdir : program.whitelistdir || bd + '/whitelist/'
+	},
+	children : [],
+	emitters : [],
+	digests : [],
+	createEmitter : function(token, digest) {
+		var e = new events.EventEmitter()
+		auditserver.emitters[token] = e
+		auditserver.emitters[digest] = e
+		auditserver.digests[token] = digest
+		return e
 	}
+}
+
+if (process.getuid() == 0) {
+	readUserListAndPopulateChildren(true)
+} else {
+	readUserListAndPopulateChildren(false)
+}
+
+function MessageHandler(user) {
+	this.user = user
+	var self = this
+	
+	this.handleChildProcessMessage = function(message) {
+		switch(message.type) {
+			case 'HANDLER_READY':
+				children[self.user].send({
+					type : 'CONFIGURATION',
+					config : auditserver.config
+				})
+				break
+			case 'OUTPUT':
+				auditserver.emitters[message.token].emit('output', message)
+				break;
+			case 'REQUEST_END':
+				auditserver.emitters[message.token].emit('end', message)
+				break;
+		}
+	}
+	
 }
 
 console.log('Audit server starting...')
@@ -60,4 +104,31 @@ console.log("Audit server listening on port %d in %s mode", app.address().port, 
 
 if (process.send) {
 	process.send({"status": "running", "port" : app.address().port })
+}
+
+function endsWith(str, suffix) {
+    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+}
+
+function readUserListAndPopulateChildren(asRoot) {
+	fs.readdir(auditserver.config.keydir, function(err, files) {
+		if (err) {
+			console.log('Could not list files in key directory. Exiting...')
+			process.exit(1)
+		}
+		populateChildren(files, asRoot)
+	})
+}
+
+function populateChildren(files, asRoot) {
+	for (var i = 0; i < files.length; i++) {
+		if (endsWith(files[i], '.pem')) {
+			var usr = files[i].substring(0, files[i].length - 4)
+			var p = cp.fork(
+				__dirname + '/lib/handlerprocess/process.js', 
+				asRoot ? ('--username ' + usr).split(' ') : undefined)
+			p.on('message', new MessageHandler(usr).handleChildProcessMessage)
+			auditserver.children[usr] = p
+		}
+	}
 }

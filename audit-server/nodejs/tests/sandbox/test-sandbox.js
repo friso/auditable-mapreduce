@@ -1,19 +1,17 @@
 var sandbox = require('../../lib/sandbox/sandbox')
 var fs = require('fs')
-var removeRecursively = require('rimraf')
 var childproc = require('child_process')
 
 var box, user, token, tree
 
 function getGitCommitSha(gitDir, callback) {
-	var theCommit = ''
-	var show = childproc.execFile(
+	childproc.exec(
 		'/usr/bin/git show | grep commit', 
-		[],
-		{ "cwd" : gitDir }
+		{ "cwd" : gitDir },
+		function (err, stdout, stderr) {
+			callback(stdout)
+		}
 	)
-	show.on('data', function(d) { theCommit += d })
-	show.on('exit', function() { console.log('in exit, the commit = '+theCommit); callback(theCommit) })
 }
 
 exports.setUp = function(callback) {
@@ -32,89 +30,67 @@ exports.setUp = function(callback) {
 }
 
 exports.tearDown = function(callback) {
-	fs.stat(auditserver.config.sandboxdir+ '/' + user + '-' + token, function(statErr) {
-		if (!statErr) {
-			removeRecursively(global.auditserver.config.sandboxdir + '/' + user + '-' + token, {}, callback)
-		} else { 
-			callback() 
-		}
-	})
+	box.cleanup(callback)
 }
 
 exports.successfullyCreateAndFillASandboxWithRepoAndTree = function(test){
 
 	box.build(runAsserts)
 	
-	function runAsserts(err, data) {
-	    test.expect(4)
-		test.strictEqual(err, null, 'No error needs to be present')
-		test.equal(data, token, 'Returned the correct token')
+	function runAsserts(err) {
+	    test.expect(3)
+		test.equal(err, null, 'No error needs to be present')
 		
 		fs.stat(auditserver.config.sandboxdir+ '/' + user + '-' + token, function(statErr) {
-			test.strictEqual(statErr, null, 'directory needs to be present!')
+			test.equal(statErr, null, 'directory needs to be present!')
 
 			getGitCommitSha(auditserver.config.sandboxdir + '/' + user + '-' + token + '/checkout/', function(gitCommit) {
-				test.equal(gitCommit, tree, 'Returned the correct commit Sha')
+				test.equal(gitCommit, 'commit ' + tree + '\n', 'Returned the correct commit Sha')
 				test.done()
 			})
 		})
-
 	}
 }
 
 exports.successfullyCreateAndFillASandboxWithRepoAndNoTree = function(test){
 
-	box.tree = undefined
+	box.gitTree = undefined
 	var expectedCommitSha = '43cb32934458101b1531d079f54b58aee1ef940b'
 	box.build(runAsserts)
 	
-	function runAsserts(err, data) {
-	    test.expect(4)
-		test.strictEqual(err, null, 'No error needs to be present')
-		test.equal(data, token, 'Returned the correct token')
+	function runAsserts(err) {
+	    test.expect(3)
+		test.equal(err, null, 'No error needs to be present')
 		
 		fs.stat(auditserver.config.sandboxdir+ '/' + user + '-' + token, function(statErr) {
-			test.strictEqual(statErr, null, 'directory needs to be present!')
+			test.equal(statErr, null, 'directory needs to be present!')
 
 			getGitCommitSha(auditserver.config.sandboxdir + '/' + user + '-' + token + '/checkout/', function(gitCommit) {
-			test.equal(gitCommit, expectedCommitSha, 'Returned the correct commit Sha')
+			test.equal(gitCommit, 'commit ' + expectedCommitSha + '\n', 'Returned the correct commit Sha')
 				test.done()
 			})
 		})
 	}
 }
 
-exports.FailOnUnknownOSUserWhileCreatingASandbox = function(test){
-	box.user = 'unknown-user'
+exports.shouldFailOnUnknownGitUrlWhileCreatingASandbox = function(test) {
+	box.gitRepo = __dirname + '/local-git-repo/not-there.git/'
 	box.build(runAsserts)
 	
-	function runAsserts(err, data) {
-	    test.expect(3)
-		test.notStrictEqual(err, null, 'Error needs to be present!')
-		test.equal(data, 'id: unknown-user: no such user\n', 'Returned wrong error message')
-		
-		fs.stat(auditserver.config.sandboxdir+ '/' + user + '-' + token, function(statErr) {
-			test.notStrictEqual(statErr, null, 'Sandbox must not exist')
-			test.done()
-		})
+	function runAsserts(err) {
+	    test.expect(1)
+		test.notEqual(err, null)
+		test.done()
 	}
 }
 
-
-exports.FailOnUnknownGitUrlWhileCreatingASandbox = function(test){
-    test.expect(1)
-	test.ok(false, 'FailOnUnknownGitUrlWhileCreatingASandbox not implemented yet')
-	test.done()
+exports.shouldFailOnUnknownTreeWhileCreatingASandbox = function(test) {
+	box.gitTree = '43cb32912345671b1531d079f54b58aee1ef940b'
+	box.build(runAsserts)
+	
+	function runAsserts(err) {
+	    test.expect(1)
+		test.notEqual(err, null)
+		test.done()
+	}
 }
-
-exports.FailOnUnknownTreeWhileCreatingASandbox = function(test){
-    test.expect(1)
-	test.ok(false, 'FailOnUnknownTreeWhileCreatingASandbox not implemented yet')
-	test.done()
-}
-
-
-
-
-
-

@@ -132,12 +132,6 @@ function ChallengeRunner(req, res) {
 			self.response.end()
 		}
 		
-		function replyNotImplemented() {
-			res.writeHead(418)
-			res.write(JSON.stringify({ result : 'NA', reason : 'Not implemented'}))
-			res.end()
-		}
-		
 		function endsWith(str, suffix) {
 		    return str.indexOf(suffix, str.length - suffix.length) !== -1;
 		}
