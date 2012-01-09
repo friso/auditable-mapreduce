@@ -58,6 +58,8 @@ function RecipeRunner(request, response) {
 		function verify(requestObject, signature) {
 			if (!signature) {
 				self.emit('notverified', 400, 'Missing signature request header (X-AuditSignature).')
+			} else if (!self.recipeName || self.recipeName == null || self.recipeName.length === 0) {
+				self.emit('notverified', 400, 'Request contains invalid or missing recipe.')
 			} else if (!self.recipeVariables || self.recipeVariables == null || self.recipeVariables.length === 0) {
 				self.emit('notverified', 400, 'Request body contains invalid or missing data.')
 			} else if (!self.config || self.config == null || self.config.length === 0) {
@@ -65,22 +67,28 @@ function RecipeRunner(request, response) {
 			} else if (!self.gitRepo || self.gitRepo == null || self.gitRepo.length === 0) {
 				self.emit('notverified', 400, 'Missing request parameter.')
 			} else {
-				fs.stat(auditserver.config.keydir+ '/' + self.user+'.pem', function(err) {
-				    var pem
+				fs.stat(auditserver.config.recipedir + '/' + self.recipeName, function(err) {
 					if (err) {
-						self.emit('notverified', 404, 'User '+self.user+' cannot be found on this server.')
+						self.emit('notverified', 404, 'Recipe '+self.recipeName+' cannot be found on this server.')
 					} else {
-						pem = fs.readFileSync(auditserver.config.keydir + '/' + self.user+'.pem')
-						var publicKey = pem.toString('ascii')
+						fs.stat(auditserver.config.keydir+ '/' + self.user+'.pem', function(err) {
+						    var pem
+							if (err) {
+								self.emit('notverified', 404, 'User '+self.user+' cannot be found on this server.')
+							} else {
+								pem = fs.readFileSync(auditserver.config.keydir + '/' + self.user+'.pem')
+								var publicKey = pem.toString('ascii')
 					
-						var verifier = crypto.createVerify('RSA-SHA256')
-						verifier.update(requestObject)
-						if (verifier.verify(publicKey, signature, 'base64')) {
-							self.signature = signature
-							self.emit('verified')
-						} else {
-							self.emit('notverified', 404, 'Signature did not match.')
-						}
+								var verifier = crypto.createVerify('RSA-SHA256')
+								verifier.update(requestObject)
+								if (verifier.verify(publicKey, signature, 'base64')) {
+									self.signature = signature
+									self.emit('verified')
+								} else {
+									self.emit('notverified', 404, 'Signature did not match.')
+								}
+							}
+						})
 					}
 				})
 			}

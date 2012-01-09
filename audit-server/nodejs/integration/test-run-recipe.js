@@ -252,7 +252,7 @@ exports.shouldRespondWithInternalServerErrorOnNonExistingOsUser = function(test)
 	var options = {
 		port : serverPort,
 		method: 'POST',
-		path : '/recipe/unknown-recipe/no-os-user/run?url=' + encodeURIComponent(__dirname + '/../tests/sandbox/local-git-repo/test-repo.git/') + '&tree=8e40a45c79ebf9ca36685e2c228254b87f3d67af'
+		path : '/recipe/test-recipe/no-os-user/run?url=' + encodeURIComponent(__dirname + '/../tests/sandbox/local-git-repo/test-repo.git/') + '&tree=8e40a45c79ebf9ca36685e2c228254b87f3d67af'
 	}
 	
 	var data = {
@@ -266,8 +266,8 @@ exports.shouldRespondWithInternalServerErrorOnNonExistingOsUser = function(test)
 		console.log(resData)
 		
 	    test.expect(2)
-		test.equals(res.statusCode, 500, 'Response code != 500')
-		test.equals(resData, 'No such user on os: no-os-user.')
+		test.equals(res.statusCode, 404, 'Response code != 404')
+		test.equals(resData, 'User no-os-user cannot be found on this server.')
 		test.done()
 	}
 	
