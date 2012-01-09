@@ -3,21 +3,26 @@ var handler
 exports.setUp = function(callback) {
 	var cp = require('child_process')
 	handler = cp.fork(__dirname + '/../lib/handlerprocess/process.js')
-	handler.once('message', function(m) {
-		if (m.type == 'HANDLER_READY') {
-			handler.send({ type : 'CONFIGURATION', 
-			config : {
-					basedir : __dirname,
-					keydir : __dirname + '/keys/',
-					recipedir : __dirname + '/recipe-templates/',
-					sandboxdir : __dirname + '/sandbox/',
-					whitelistdir : __dirname + '/whitelist/'
-				}
-			})
-			callback()
-		} else {
-			console.log('Unexpected message from handler process!')
-			process.exit(1)
+	handler.on('message', function(m) {
+		switch (m.type) {
+			case 'HANDLER_READY_FOR_CONFIG' :
+				handler.send({ type : 'CONFIGURATION', 
+				config : {
+						basedir : __dirname,
+						keydir : __dirname + '/keys/',
+						recipedir : __dirname + '/recipe-templates/',
+						sandboxdir : __dirname + '/sandbox/',
+						whitelistdir : __dirname + '/whitelist/'
+					}
+				})
+				break
+			case 'HANDLER_READY' :
+				handler.removeAllListeners()
+				callback()
+				break
+			default :
+				console.log('Unexpected message from handler process!')
+				process.exit(1)
 		}
 	})
 }

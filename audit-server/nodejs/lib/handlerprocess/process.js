@@ -29,13 +29,17 @@ if (process.getuid() == 0) {
 process.on('message', function(m) {
 	switch(m.type) {
 		case 'CONFIGURATION':
-			console.log('got config '+m.config)
-
 			global.auditserver.config = m.config
-			console.log('AUDITSERVER['+process.pid+']:'+JSON.stringify(auditserver))
+			process.send({
+				type : 'HANDLER_READY'
+			})
+
 			break
+		case 'CLOSE':
+			process.send({
+				type : 'HANDLER_CLOSED'
+			})
 		case 'HANDLE_REQUEST':
-			console.log('got handle request for '+m.user+' ['+process.pid+']')
 			var handler = new RequestHandler(m)
 			handler.handleRequest()
 			break
@@ -46,7 +50,7 @@ process.on('message', function(m) {
 })
 
 process.send({
-	type : 'HANDLER_READY'
+	type : 'HANDLER_READY_FOR_CONFIG'
 })
 
 function RequestHandler(m) {

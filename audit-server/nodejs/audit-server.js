@@ -28,6 +28,7 @@ global.auditserver = {
 		whitelistdir : program.whitelistdir || bd + '/whitelist/'
 	},
 	children : [],
+	readyChildren : [],
 	emitters : [],
 	digests : [],
 	createEmitter : function(token, digest) {
@@ -37,36 +38,6 @@ global.auditserver = {
 		auditserver.digests[token] = digest
 		return e
 	}
-}
-
-if (process.getuid() == 0) {
-	readUserListAndPopulateChildren(true)
-} else {
-	readUserListAndPopulateChildren(false)
-}
-
-function MessageHandler(user) {
-	this.user = user
-	var self = this
-	
-	this.handleChildProcessMessage = function(message) {
-		switch(message.type) {
-			case 'HANDLER_READY':
-				console.log('got Handler ready, sending config for '+self.user)
-				auditserver.children[self.user].send({
-					type : 'CONFIGURATION',
-					config : auditserver.config
-				})
-				break
-			case 'OUTPUT':
-				auditserver.emitters[message.token].emit('output', message)
-				break
-			case 'REQUEST_END':
-				auditserver.emitters[message.token].emit('end', message)
-				break
-		}
-	}
-	
 }
 
 console.log('Audit server starting...')
@@ -100,11 +71,71 @@ app.post('/recipe/:recipe/:user/run', routes.runRecipe)
 //challenge - response
 app.get('/challenge/:user/:token/:jarname/:sha1', routes.challenge)
 
-app.listen(9090);
-console.log("Audit server listening on port %d in %s mode", app.address().port, app.settings.env)
+if (process.getuid() == 0) {
+	readUserListAndPopulateChildren(true)
+} else {
+	readUserListAndPopulateChildren(false)
+}
 
-if (process.send) {
-	process.send({"status": "running", "port" : app.address().port })
+function MessageHandler(user) {
+	this.user = user
+	var self = this
+	
+	this.handleChildProcessMessage = function(message) {
+		switch(message.type) {
+			case 'HANDLER_READY_FOR_CONFIG':
+				auditserver.children[self.user].send({
+					type : 'CONFIGURATION',
+					config : auditserver.config
+				})
+				break
+			case 'HANDLER_READY':
+				auditserver.readyChildren[self.user] = true
+				startListeningWhenAllChildrenReady()
+				break
+			case 'HANDLER_CLOSED':
+				var idx = auditserver.readyChildren.indexOf(self.user) 
+				if(idx!=-1) auditserver.readyChildren.splice(idx, 1)
+
+				idx = auditserver.children.indexOf(self.user) 
+				if(idx!=-1) auditserver.children.splice(idx, 1)
+
+				stopListeningWhenAllChildrenClosed()
+				break
+			case 'OUTPUT':
+				auditserver.emitters[message.token].emit('output', message)
+				break
+			case 'REQUEST_END':
+				auditserver.emitters[message.token].emit('end', message)
+				break
+		}
+	}
+	
+}
+
+function startListeningWhenAllChildrenReady() {
+	var allReady = true;
+	for (var usr in auditserver.readyChildren) {
+		if (!auditserver.readyChildren[usr]) {
+			allReady = false
+		}
+	}
+	
+	if (allReady) {
+		app.listen(9090);
+		console.log("Audit server listening on port %d in %s mode", app.address().port, app.settings.env)
+
+		if (process.send) {
+			process.send({"status": "running", "port" : app.address().port })
+		}
+	}
+}
+
+function stopListeningWhenAllChildrenClosed() {
+	if (auditserver.children.size == 0) {
+		console.log('Auditserver stopped')
+		process.exit(0)
+	}
 }
 
 function endsWith(str, suffix) {
@@ -125,11 +156,16 @@ function populateChildren(files, asRoot) {
 	for (var i = 0; i < files.length; i++) {
 		if (endsWith(files[i], '.pem')) {
 			var usr = files[i].substring(0, files[i].length - 4)
-			var p = cp.fork(
-				__dirname + '/lib/handlerprocess/process.js', 
-				asRoot ? ('--username ' + usr).split(' ') : undefined)
-			p.on('message', new MessageHandler(usr).handleChildProcessMessage)
-			auditserver.children[usr] = p
+			auditserver.readyChildren[usr] = false
+			auditserver.children[usr] = undefined
 		}
+	}
+	
+	for (var usr in auditserver.children) {
+		var p = cp.fork(
+			__dirname + '/lib/handlerprocess/process.js', 
+			asRoot ? ('--username ' + usr).split(' ') : undefined)
+		p.on('message', new MessageHandler(usr).handleChildProcessMessage)
+		auditserver.children[usr] = p
 	}
 }

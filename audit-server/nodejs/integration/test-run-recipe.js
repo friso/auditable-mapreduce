@@ -44,7 +44,7 @@ exports.shouldRunCorrectRecipe = function(test) {
 	var options = {
 		port : serverPort,
 		method: 'POST',
-		path : '/recipe/test-recipe/test-user/run?url=' + encodeURIComponent('ssh://git@localhost/~/repo') + '&tree=3a29641aa99c20320f184d2e0108f3ce9005d8f0'
+		path : '/recipe/test-recipe/test-user/run?url=' + encodeURIComponent(__dirname + '/../tests/sandbox/local-git-repo/test-repo.git/') + '&tree=8e40a45c79ebf9ca36685e2c228254b87f3d67af'
 	}
 	
 	var data = {
@@ -59,7 +59,7 @@ exports.shouldRunCorrectRecipe = function(test) {
 		
 	    test.expect(2)
 		test.equals(res.statusCode, 200, 'Response code != 200')
-		test.equals(resData, 'It works beautifully well!\nsingle\nI brought multiple.', 'Response body doesn not match')
+		test.equals(resData, 'It works beautifully well!\nsingle\nI brought multiple.\n', 'Response body doesn not match')
 		test.done()
 	}
 	
@@ -70,7 +70,7 @@ exports.shouldRespondWithBadRequestOnMissingHeader = function(test) {
 	var options = {
 		port : serverPort,
 		method: 'POST',
-		path : '/recipe/test-recipe/test-user/run?url=' + encodeURIComponent('ssh://git@localhost/~/repo') + '&tree=3a29641aa99c20320f184d2e0108f3ce9005d8f0'
+		path : '/recipe/test-recipe/test-user/run?url=' + encodeURIComponent(__dirname + '/../tests/sandbox/local-git-repo/test-repo.git/') + '&tree=8e40a45c79ebf9ca36685e2c228254b87f3d67af'
 	}
 	
 	var data = {
@@ -94,7 +94,7 @@ exports.shouldRespondWithBadRequestOnWrongSignature = function(test) {
 	var options = {
 		port : serverPort,
 		method: 'POST',
-		path : '/recipe/test-recipe/test-user/run?url=' + encodeURIComponent('ssh://git@localhost/~/repo') + '&tree=3a29641aa99c20320f184d2e0108f3ce9005d8f0'
+		path : '/recipe/test-recipe/test-user/run?url=' + encodeURIComponent(__dirname + '/../tests/sandbox/local-git-repo/test-repo.git/') + '&tree=8e40a45c79ebf9ca36685e2c228254b87f3d67af'
 	}
 	
 	var data = {
@@ -123,7 +123,7 @@ exports.shouldRespondWithBadRequestOnMissingData = function(test) {
 	var options = {
 		port : serverPort,
 		method: 'POST',
-		path : '/recipe/test-recipe/test-user/run?url=' + encodeURIComponent('ssh://git@localhost/~/repo') + '&tree=3a29641aa99c20320f184d2e0108f3ce9005d8f0'
+		path : '/recipe/test-recipe/test-user/run?url=' + encodeURIComponent(__dirname + '/../tests/sandbox/local-git-repo/test-repo.git/') + '&tree=8e40a45c79ebf9ca36685e2c228254b87f3d67af'
 	}
 	
 	var data = {
@@ -148,7 +148,7 @@ exports.shouldRespondWithBadRequestOnInvalidData = function(test) {
 	var options = {
 		port : serverPort,
 		method: 'POST',
-		path : '/recipe/test-recipe/test-user/run?url=' + encodeURIComponent('ssh://git@localhost/~/repo') + '&tree=3a29641aa99c20320f184d2e0108f3ce9005d8f0'
+		path : '/recipe/test-recipe/test-user/run?url=' + encodeURIComponent(__dirname + '/../tests/sandbox/local-git-repo/test-repo.git/') + '&tree=8e40a45c79ebf9ca36685e2c228254b87f3d67af'
 	}
 	
 	var data = {
@@ -200,7 +200,7 @@ exports.shouldRespondWithNotFoundOnUnknownUser = function(test) {
 	var options = {
 		port : serverPort,
 		method: 'POST',
-		path : '/recipe/test-recipe/unknown-user/run?url=' + encodeURIComponent('ssh://git@localhost/~/repo') + '&tree=3a29641aa99c20320f184d2e0108f3ce9005d8f0'
+		path : '/recipe/test-recipe/unknown-user/run?url=' + encodeURIComponent(__dirname + '/../tests/sandbox/local-git-repo/test-repo.git/') + '&tree=8e40a45c79ebf9ca36685e2c228254b87f3d67af'
 	}
 	
 	var data = {
@@ -226,7 +226,7 @@ exports.shouldRespondWithNotFoundOnUnknownRecipe = function(test) {
 	var options = {
 		port : serverPort,
 		method: 'POST',
-		path : '/recipe/unknown-recipe/test-user/run?url=' + encodeURIComponent('ssh://git@localhost/~/repo') + '&tree=3a29641aa99c20320f184d2e0108f3ce9005d8f0'
+		path : '/recipe/unknown-recipe/test-user/run?url=' + encodeURIComponent(__dirname + '/../tests/sandbox/local-git-repo/test-repo.git/') + '&tree=8e40a45c79ebf9ca36685e2c228254b87f3d67af'
 	}
 	
 	var data = {
@@ -252,7 +252,7 @@ exports.shouldRespondWithInternalServerErrorOnNonExistingOsUser = function(test)
 	var options = {
 		port : serverPort,
 		method: 'POST',
-		path : '/recipe/unknown-recipe/no-os-user/run?url=' + encodeURIComponent('ssh://git@localhost/~/repo') + '&tree=3a29641aa99c20320f184d2e0108f3ce9005d8f0'
+		path : '/recipe/unknown-recipe/no-os-user/run?url=' + encodeURIComponent(__dirname + '/../tests/sandbox/local-git-repo/test-repo.git/') + '&tree=8e40a45c79ebf9ca36685e2c228254b87f3d67af'
 	}
 	
 	var data = {

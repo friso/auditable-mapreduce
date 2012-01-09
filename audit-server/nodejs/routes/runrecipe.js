@@ -21,7 +21,7 @@ function RecipeRunner(request, response) {
 	this.recipeVariables = undefined
 	this.config = undefined
 	this.requestData = undefined
-	
+	this.signature = undefined
 	
 	var self = this
 	
@@ -76,6 +76,7 @@ function RecipeRunner(request, response) {
 						var verifier = crypto.createVerify('RSA-SHA256')
 						verifier.update(requestObject)
 						if (verifier.verify(publicKey, signature, 'base64')) {
+							self.signature = signature
 							self.emit('verified')
 						} else {
 							self.emit('notverified', 404, 'Signature did not match.')
@@ -87,6 +88,8 @@ function RecipeRunner(request, response) {
 		
 		function populateSandbox() {			
 			var token =	UUID.generate()
+			auditserver.createEmitter(token, self.signature).on('output', processOutput).on('end', endOutput)		
+			
 			var request = {
 				type : 'HANDLE_REQUEST',
 				token : token,
@@ -98,19 +101,23 @@ function RecipeRunner(request, response) {
 				hconf : self.config
 			}
 			
+			self.response.writeHead(200, { 'Content-Type':'text/plain'})
 			auditserver.children[self.user].send(request)			
 		}
 
-		function createAndRunRecipe(err) {
-			if (err) {
-				self.response.writeHead(500, { 'Content-Type':'text/plain'})
-				self.response.end(err)
-			} else {
-				self.response.writeHead(200, { 'Content-Type':'text/plain'})
-				self.response.write('createAndRunRecipe: Not yet imlpemented.')
-				self.response.end()
+		function processOutput(message) {
+			if (message.err) {
+				self.response.write(JSON.stringify(message.err))
+			}
+			if (message.out) {
+				self.response.write(message.out)
 			}
 		}
+
+		function endOutput(message) {
+			processOutput(message)
+			self.response.end()
+		}		
 	}
 }
 
