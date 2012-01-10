@@ -19,6 +19,8 @@ program
 
 var bd = program.basedir || __dirname + '/..'
 
+var numberOfChildProcessesThatAreStillInitializing = 0
+
 global.auditserver = {
 	config : {
 		basedir : bd,
@@ -28,7 +30,6 @@ global.auditserver = {
 		whitelistdir : program.whitelistdir || bd + '/whitelist/'
 	},
 	children : [],
-	readyChildren : [],
 	emitters : [],
 	digests : [],
 	createEmitter : function(token, digest) {
@@ -90,17 +91,8 @@ function MessageHandler(user) {
 				})
 				break
 			case 'HANDLER_READY':
-				auditserver.readyChildren[self.user] = true
+				numberOfChildProcessesThatAreStillInitializing--
 				startListeningWhenAllChildrenReady()
-				break
-			case 'HANDLER_CLOSED':
-				var idx = auditserver.readyChildren.indexOf(self.user) 
-				if(idx!=-1) auditserver.readyChildren.splice(idx, 1)
-
-				idx = auditserver.children.indexOf(self.user) 
-				if(idx!=-1) auditserver.children.splice(idx, 1)
-
-				stopListeningWhenAllChildrenClosed()
 				break
 			case 'OUTPUT':
 				auditserver.emitters[message.token].emit('output', message)
@@ -114,14 +106,7 @@ function MessageHandler(user) {
 }
 
 function startListeningWhenAllChildrenReady() {
-	var allReady = true;
-	for (var usr in auditserver.readyChildren) {
-		if (!auditserver.readyChildren[usr]) {
-			allReady = false
-		}
-	}
-	
-	if (allReady) {
+	if (numberOfChildProcessesThatAreStillInitializing === 0) {
 		app.listen(9090);
 		console.log("Audit server listening on port %d in %s mode", app.address().port, app.settings.env)
 
@@ -131,11 +116,9 @@ function startListeningWhenAllChildrenReady() {
 	}
 }
 
-function stopListeningWhenAllChildrenClosed() {
-	if (auditserver.children.size == 0) {
-		console.log('Auditserver stopped')
-		process.exit(0)
-	}
+function stopAuditServerWhenChildExits() {
+	console.log('Child process died, Auditserver must be stopped')
+	process.kill()
 }
 
 function endsWith(str, suffix) {
@@ -153,19 +136,19 @@ function readUserListAndPopulateChildren(asRoot) {
 }
 
 function populateChildren(files, asRoot) {
+	numberOfChildProcessesThatAreStillInitializing = files.length
+
 	for (var i = 0; i < files.length; i++) {
 		if (endsWith(files[i], '.pem')) {
-			var usr = files[i].substring(0, files[i].length - 4)
-			auditserver.readyChildren[usr] = false
-			auditserver.children[usr] = undefined
+			var usr = files[i].substring(0, files[i].length - 4)	
+			var p = cp.fork(
+				__dirname + '/lib/handlerprocess/process.js', 
+				asRoot ? ('--username ' + usr).split(' ') : undefined)
+			p.on('message', new MessageHandler(usr).handleChildProcessMessage)
+			p.on('exit', stopAuditServerWhenChildExits)
+			auditserver.children[usr] = p
+		} else {
+			numberOfChildProcessesThatAreStillInitializing--
 		}
-	}
-	
-	for (var usr in auditserver.children) {
-		var p = cp.fork(
-			__dirname + '/lib/handlerprocess/process.js', 
-			asRoot ? ('--username ' + usr).split(' ') : undefined)
-		p.on('message', new MessageHandler(usr).handleChildProcessMessage)
-		auditserver.children[usr] = p
-	}
+ 	}
 }
