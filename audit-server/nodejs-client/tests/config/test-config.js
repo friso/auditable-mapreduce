@@ -14,7 +14,6 @@ program.prompt = function(q, callback) {
 }
 
 exports.setUp = function(callback) {
-
 	callback()
 }
 
