@@ -8,7 +8,6 @@ exports.setUp = function(callback) {
 }
 
 exports.tearDown = function(callback) {
-	//process.stdin.destroy()
 	callback()
 }
 
