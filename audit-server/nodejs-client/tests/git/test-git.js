@@ -50,3 +50,59 @@ exports.successfullyGetAGitTree = function(test){
 	    test.done()
 	}	
 }
+
+exports.dontGetAGitUrlFromNonGitDir = function(test){
+
+    test.expect(2)
+    
+	gitinfo = git.createGitInfo(__dirname + '/tmp')
+    gitinfo.getUrl(runAsserts)
+    
+    function runAsserts(err, url) {
+		test.notEqual(err, null, 'An error needs to be present')
+		test.equal(url, null, 'url may not be there')
+	    test.done()
+	}	
+}
+
+exports.dontGetAGitTreeFromNonGitDir = function(test){
+
+    test.expect(2)
+    
+	gitinfo = git.createGitInfo(__dirname + '/tmp')
+    gitinfo.getTree(runAsserts)
+    
+    function runAsserts(err, tree) {
+		test.notEqual(err, null, 'An error needs to be present')
+		test.equal(tree, null, 'tree may not be there')
+	    test.done()
+	}	
+}
+
+exports.dontGetAGitUrlFromNonExistingDir = function(test){
+
+    test.expect(2)
+    
+	gitinfo = git.createGitInfo(__dirname + '/test-non-git-dir/test-dir-not-there')
+    gitinfo.getUrl(runAsserts)
+    
+    function runAsserts(err, url) {
+		test.notEqual(err, null, 'An error needs to be present')
+		test.equal(url, null, 'url may not be there')
+	    test.done()
+	}	
+}
+
+exports.dontGetAGitTreeFromNonExistingDir = function(test){
+
+    test.expect(2)
+    
+	gitinfo = git.createGitInfo(__dirname + '/test-non-git-dir/test-dir-not-there')
+    gitinfo.getTree(runAsserts)
+    
+    function runAsserts(err, tree) {
+		test.notEqual(err, null, 'An error needs to be present')
+		test.equal(tree, null, 'tree may not be there')
+	    test.done()
+	}	
+}
