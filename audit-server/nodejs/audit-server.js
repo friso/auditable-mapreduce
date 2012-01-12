@@ -15,6 +15,7 @@ program
 	.option('-s, --sandboxdir <sandboxdir>', 'Override the default location that audit server uses to manage sandboxes.')
 	.option('-r, --recipedir <recipedir>', 'Override the default location for storing runnable recipes.')
 	.option('-w, --whitelistdir <whitelistdir>', 'Override the default location for keeping whitelisted jars (i.e. trusted jars, always OK to schedule).')
+	.option('-u, --username <username>', 'The UID or username to setuid() to. Will only be used when started as root, ignored otherwise.')
 	.parse(process.argv)
 
 var bd = program.basedir || __dirname + '/..'
@@ -27,7 +28,8 @@ global.auditserver = {
 		keydir : program.keydir || bd + '/keys/',
 		recipedir : program.recipedir || bd + '/recipe-templates/',
 		sandboxdir : program.sandboxdir || bd + '/sandbox/',
-		whitelistdir : program.whitelistdir || bd + '/whitelist/'
+		whitelistdir : program.whitelistdir || bd + '/whitelist/',
+		username : program.username || 'auditserver'
 	},
 	children : [],
 	emitters : [],
@@ -42,7 +44,6 @@ global.auditserver = {
 }
 
 console.log('Audit server starting...')
-//console.log('config = ' + JSON.stringify(auditserver.config, null, 4))
 
 var app = module.exports = express.createServer()
 
@@ -151,4 +152,8 @@ function populateChildren(files, asRoot) {
 			numberOfChildProcessesThatAreStillInitializing--
 		}
  	}
+	
+	if (asRoot) {
+		process.setuid(auditserver.config.username)
+	}
 }
