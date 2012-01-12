@@ -1,0 +1,12 @@
+{
+    "name": "run-recipe"
+  , "version": "0.0.1"
+  , "private": true
+  , "dependencies": {
+      "commander": "0.5.1"
+    , "libxmljs": "0.4.3"
+  }
+  , "scripts": { "test" : "bash tests.sh"
+               , "integration" : "bash integration-tests.sh"
+  }
+}
