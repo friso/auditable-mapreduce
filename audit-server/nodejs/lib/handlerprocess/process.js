@@ -70,6 +70,7 @@ function RequestHandler(m) {
 					if (err) {
 						sendError(err)
 					} else {
+						self.message.hconf['auditable.mapreduce.sessionToken'] = self.message.token
 						hconf.writeHadoopConfiguration(self.message.hconf, self.box.getDir() + '/hconf/core-site.xml', hconfReady)
 					}
 				})
