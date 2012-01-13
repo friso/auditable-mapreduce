@@ -112,6 +112,7 @@ function createauditServerRequest() {
 									var data = JSON.stringify(postData)
 									var sign = crypto.createSign('RSA-SHA256')
 									sign.update(signedUrlPart + data)
+									console.log('Signig: ' + signedUrlPart + data)
 									signature = sign.sign(
 													fs.readFileSync(process.env.AUDITSERVER_PRIVATE_KEY, 'ascii'),
 													'base64'
