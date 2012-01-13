@@ -31,7 +31,7 @@ exports.shouldAcceptCorrectJarInSandbox = function(test) {
 		method: 'GET',
 		path : '/challenge/test-user/bea010bb-58a9-456a-b9bf-c8a495a5a6db/good-jar.jar/a5615894ebbfcf3c56ca003b59cd022c17b0a3aa'
 	}
-		
+	
 	function runAsserts(res, resData) {
 		var resObject = JSON.parse(resData)
 	    test.expect(3)

@@ -18,4 +18,10 @@
 	  <name>auditable.mapreduce.actualTaskScheduler</name>
 	  <value>org.apache.hadoop.mapred.JobQueueTaskScheduler</value>
 	</property>
+	
+	<property>
+	  <name>auditable.mapreduce.auditserverBaseUrl</name>
+	  <value>http://localhost:9090/</value>
+	  <description>The base url for the audit server.</description>
+	</property>
 </configuration>
