@@ -1,6 +1,7 @@
 var program = require('commander')
 var fs = require('fs')
 var crypto = require('crypto')
+var http = require('http')
 
 var config = require('./lib/config')
 var hconf = require('./lib/hconf')
@@ -104,11 +105,12 @@ function createauditServerRequest() {
 									console.log(err)
 									exit(1)
 								} else {
+									var port = 9090
 									var signedUrlPart = '/recipe/test-recipe/'+process.env.AUDITSERVER_USER+'/run?url=' +
 										encodeURIComponent(gitUrl) +
 										'&tree=' +
 										gitTree
-									var fullUrl = 'http://' + program.host + ':9090' + signedUrlPart
+									var fullUrl = 'http://' + program.host + ':' + port + signedUrlPart
 									var data = JSON.stringify(postData)
 									var sign = crypto.createSign('RSA-SHA256')
 									sign.update(signedUrlPart + data)
@@ -118,11 +120,23 @@ function createauditServerRequest() {
 													'base64'
 												)
 	
-									exit(0, 'curl ' +
+									writeFullRequestToLocalFile(
+										'curl ' +
 										' -H \'X-AuditSignature:' + signature + '\'' +
 										' -d \''+data+'\'' +
-										' \'' +fullUrl + '\''
+										' \'' +fullUrl + '\''									
 									)
+
+									var options = {
+										host : program.host,
+										port : port,
+										method: 'POST',
+										path : signedUrlPart,
+										headers : {'X-AuditSignature' : signature}
+									}
+									
+									doPostRequest(options, data, onEndOfRequest)
+									
 								}
 				    		})
 						}
@@ -132,8 +146,30 @@ function createauditServerRequest() {
 		}
 	})
 }	
+	
+function doPostRequest(options, data, callback) {
+	var responseData = ''
+	var req = http.request(options, function(res) {
+		res.on('data', grabData)
+		res.on('end', function() { callback(res, responseData) })
+	})
+	
+	req.write(data)
+	
+	req.end();
 
-function exit(status, result) {
+	function grabData(d) {
+		responseData += d
+		process.stdout.write(d)
+	}
+}
+
+function onEndOfRequest(res, responseData) {
+	console.log('Run finished with code: '+res.statusCode)
+	exit(res.statusCode)
+}
+
+function writeFullRequestToLocalFile(result) {
 	if (process.send) {
 		if (result) {
 			process.send(result)
@@ -143,5 +179,8 @@ function exit(status, result) {
 		fs.writeFileSync(process.cwd() + '/recipe.result', result, 'utf-8')
 		fs.chmodSync(process.cwd() + '/recipe.result', '0766')
 	}
+}
+
+function exit(status) {
 	process.exit(status)
 }
