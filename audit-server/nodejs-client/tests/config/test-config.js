@@ -1,14 +1,23 @@
 var config = require('../../lib/config')
 var fs = require('fs')
+var program = require('commander')
 
 var configuration;
+program.prompt = function(q, callback) {
+	if (q == 'Value for userParam2: ') {
+		callback('test-user2')
+	} else 	if (q == 'Value for userParam: ') {
+		callback('test-user')
+	} else {
+		callback('wrong question asked')
+	}
+}
 
 exports.setUp = function(callback) {
 	callback()
 }
 
 exports.tearDown = function(callback) {
-	//process.stdin.destroy()
 	callback()
 }
 

@@ -1,0 +1,4 @@
+{
+	"name":"git",
+	"main":"./git-info.js"
+}
