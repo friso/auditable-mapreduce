@@ -15,6 +15,7 @@ import org.junit.Test;
 
 
 public class AuditEnforcingTaskSchedulerWrapperTest {
+	private static final String USER = "test-user";
 	private static final String TEST_JAR_SHA1 = "849ee21fd67bc51fa6d149cd1c99c636bdc7364b";
 	private static final String TEST_JAR_LOCATION = "src/test/data/test.jar";
 	private static final String SECRET_SESSION_TOKEN = "SECRET_SESSION_TOKEN";
@@ -25,6 +26,7 @@ public class AuditEnforcingTaskSchedulerWrapperTest {
 	@Before
 	public void setup() {
 		conf = new Configuration();
+		conf.set("user.name", USER);
 		conf.set("auditable.mapreduce.actualTaskScheduler", ACTUAL_SCHEDULER_CLASS);
 		conf.set("auditable.mapreduce.sessionToken", SECRET_SESSION_TOKEN);
 		conf.set("mapred.jar", TEST_JAR_LOCATION);
@@ -51,6 +53,7 @@ public class AuditEnforcingTaskSchedulerWrapperTest {
 		subject.setConf(conf);
 		
 		expect(clientMock.challengeServer(
+				eq(USER),
 				eq(SECRET_SESSION_TOKEN), 
 				eq("test.jar"), 
 				eq(TEST_JAR_SHA1))).andReturn(AuditServerResponse.OK);
@@ -68,6 +71,7 @@ public class AuditEnforcingTaskSchedulerWrapperTest {
 		subject.setConf(conf);
 		
 		expect(clientMock.challengeServer(
+				anyObject(String.class),
 				anyObject(String.class), 
 				anyObject(String.class), 
 				anyObject(String.class))).andReturn(AuditServerResponse.NOK);

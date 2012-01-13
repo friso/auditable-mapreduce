@@ -20,8 +20,9 @@ public class AuditEnforcingTaskSchedulerWrapper extends TaskScheduler {
 	private Configuration configuration;
 	private AuditServerHttpClient client;
 	
+	private static final Log log = LogFactory.getLog(AuditEnforcingTaskSchedulerWrapper.class);
+	
 	AuditEnforcingTaskSchedulerWrapper() {
-		client = new AuditServerHttpClient();
 	}
 	
 	/*
@@ -30,8 +31,6 @@ public class AuditEnforcingTaskSchedulerWrapper extends TaskScheduler {
 	AuditEnforcingTaskSchedulerWrapper(AuditServerHttpClient client) {
 		this.client = client;
 	}
-	
-	private static final Log log = LogFactory.getLog(AuditEnforcingTaskSchedulerWrapper.class);
 	
 	@Override
 	public Configuration getConf() {
@@ -43,6 +42,10 @@ public class AuditEnforcingTaskSchedulerWrapper extends TaskScheduler {
 		//create the actual scheduler and move on
 	    Class<? extends TaskScheduler> schedulerClass = configuration.getClass("auditable.mapreduce.actualTaskScheduler", JobQueueTaskScheduler.class, TaskScheduler.class);
 	    actualScheduler = (TaskScheduler) ReflectionUtils.newInstance(schedulerClass, configuration);
+	    
+	    if (client == null) {
+	    	client = new AuditServerHttpClient(configuration.get("auditable.mapreduce.auditserverBaseUrl"));
+	    }
 		
 		this.configuration = configuration;
 	}
@@ -85,16 +88,17 @@ public class AuditEnforcingTaskSchedulerWrapper extends TaskScheduler {
 		FileSystem fs = FileSystem.get(job.getJobConf());
 		FSDataInputStream inputStream = fs.open(file);
 		
+		String user = job.getJobConf().get("user.name");
 		String token = job.getJobConf().get("auditable.mapreduce.sessionToken");
 		String sha1 = DigestUtils.shaHex(inputStream);
 		String jarName = file.getName();
 		
 		inputStream.close();
 		
-		if (token == null) {
+		if (token == null || user == null) {
 			log.warn("Rejecting job submission without audit token.");
 			throw new IOException("Rejecting job submission without audit token.");
-		} else if (client.challengeServer(token, jarName, sha1) == AuditServerResponse.NOK) {
+		} else if (client.challengeServer(user, token, jarName, sha1) == AuditServerResponse.NOK) {
 			log.warn("Job submission failed audit server check. token=" + token + "; JAR name=" + jarName + "; SHA1=" + sha1);
 			throw new IOException("Job submission failed audit server check. token=" + token + "; JAR name=" + jarName + "; SHA1=" + sha1);
 		}
