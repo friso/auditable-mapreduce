@@ -101,6 +101,8 @@ function MessageHandler(user) {
 				break
 			case 'REQUEST_END':
 				auditserver.emitters[message.token].emit('end', message)
+				delete auditserver.emitters[message.token]
+				delete auditserver.emitters[auditserver.digests[message.token]]
 				break
 		}
 	}

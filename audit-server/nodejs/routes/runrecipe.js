@@ -31,6 +31,7 @@ function RecipeRunner(request, response) {
 			this.response.writeHead(statusCode, { 'Content-Type':'text/plain'})
 			this.response.end(message)
 		})
+		self.once('reconnected', reconnect)
 	
 		populateFromRequest(request, response)
 
@@ -83,7 +84,11 @@ function RecipeRunner(request, response) {
 								verifier.update(requestObject)
 								if (verifier.verify(publicKey, signature, 'base64')) {
 									self.signature = signature
-									self.emit('verified')
+									if (auditserver.emitters[signature]) {
+										self.emit('reconnected', signature)
+									} else {
+										self.emit('verified')
+									}
 								} else {
 									self.emit('notverified', 404, 'Signature did not match.')
 								}
@@ -92,6 +97,10 @@ function RecipeRunner(request, response) {
 					}
 				})
 			}
+		}
+		
+		function reconnect(digest) {
+			auditserver.emitters[digest].on('output', processOutput).on('end', endOutput)		
 		}
 		
 		function populateSandbox() {			

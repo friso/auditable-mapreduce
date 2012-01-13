@@ -106,7 +106,7 @@ function createauditServerRequest() {
 									exit(1)
 								} else {
 									var port = 9090
-									var signedUrlPart = '/recipe/test-recipe/'+process.env.AUDITSERVER_USER+'/run?url=' +
+									var signedUrlPart = '/recipe/'+recipeConfig.recipe+'/'+process.env.AUDITSERVER_USER+'/run?url=' +
 										encodeURIComponent(gitUrl) +
 										'&tree=' +
 										gitTree
