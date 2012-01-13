@@ -28,19 +28,16 @@ exports.successfullCreateAHttpPostRequest = function(test) {
     test.expect(1)
 	
 	var path = '/recipe/test-recipe/test-user/run?url=' +
-	encodeURIComponent(__dirname + '/../tests/git/local-git-repo/test-dir.git') +
+	encodeURIComponent(__dirname + '/test-dir.git') +
 	'&tree=7600aec236f786083d18c16141a5eae7774c2a7a'
 	
 	var data = '{"recipe":"test-recipe","recipevars":{"singleParam":"single","arrayParam":["I","brought","multiple."]},"hconf":{"fs.default.name":"hdfs://localhost:9000/","dfs.replication":"1","hadoop.tmp.dir":"/tmp/hadoop","mapred.job.tracker":"master:8021","mapred.map.tasks.speculative.execution":"false","mapred.output.compress":"true"}}' 
-	
-	console.log(path + data)
-	console.log('_______')
-	
+		
     var expectedUrl = 'curl  -H \'X-AuditSignature:' + getSignature(path + data) + '\' -d \'' + data + '\' \'http://localhost:9090' + path + '\''
 
 	handler = cp.fork(__dirname + '/../run-recipe.js',
 						('--filename '+ __dirname + '/test-config.cfg' +
-						 ' --gitdirectory ' + __dirname + '/checkout').split(' '),
+						 ' --gitdirectory ' + __dirname + '/test-dir').split(' '),
 						{ cwd: process.cwd(),
 				 		  env: process.env,
 				  	      setsid: false

@@ -1,3 +1,4 @@
+#! /usr/local/bin/node
 var events = require('events')
 var fs = require('fs')
 var cp = require('child_process')

@@ -12,7 +12,7 @@ program
 	.version('0.0.1')
 	.usage('<options>')
 	.option('-f, --filename <filename>', 'The file containing the recipe and variables to use for running.')
-	.option('-g, --gitdirectory [gitdrectory]', 'The dir containing the git repo and tree.')
+	.option('-g, --gitdirectory [gitdirectory]', 'The dir containing the git repo and tree.')
 	.option('-h, --host [host]', 'The host to call the url.')
 	.parse(process.argv)
 
@@ -114,7 +114,6 @@ function createauditServerRequest() {
 									var data = JSON.stringify(postData)
 									var sign = crypto.createSign('RSA-SHA256')
 									sign.update(signedUrlPart + data)
-									console.log('Signig: ' + signedUrlPart + data)
 									signature = sign.sign(
 													fs.readFileSync(process.env.AUDITSERVER_PRIVATE_KEY, 'ascii'),
 													'base64'
