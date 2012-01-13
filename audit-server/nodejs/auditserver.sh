@@ -7,7 +7,7 @@ function start() {
         exit 1
     else
         #sudo -u auditserver /usr/local/bin/node audit-server.js > /var/log/auditserver/auditserver.log 2> /var/log/auditserver/auditserver.err &
-        /usr/local/bin/node audit-server.js > /var/log/auditserver/auditserver.log 2> /var/log/auditserver/auditserver.err &
+        /usr/local/bin/node  $(dirname $0)/audit-server.js > /var/log/auditserver/auditserver.log 2> /var/log/auditserver/auditserver.err &
 
         PID=$!
         echo $PID > /var/run/auditserver/auditserver.pid
