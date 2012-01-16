@@ -7,6 +7,7 @@ var express = require('express')
 var program = require('commander')
 
 var routes = require('./routes')
+var logFactory = require('./lib/logging')
 
 program
 	.version('0.0.1')
@@ -17,11 +18,14 @@ program
 	.option('-r, --recipedir <recipedir>', 'Override the default location for storing runnable recipes.')
 	.option('-w, --whitelistdir <whitelistdir>', 'Override the default location for keeping whitelisted jars (i.e. trusted jars, always OK to schedule).')
 	.option('-u, --username <username>', 'The UID or username to setuid() to. Will only be used when started as root, ignored otherwise.')
+	.option('-d, --debug', 'Enable debug logging.')
 	.parse(process.argv)
 
 var bd = program.basedir || __dirname + '/..'
 
 var numberOfChildProcessesThatAreStillInitializing = 0
+
+global.LOG = logFactory.getLogger(program.debug)
 
 global.auditserver = {
 	config : {
@@ -44,7 +48,7 @@ global.auditserver = {
 	}
 }
 
-console.log('Audit server starting...')
+LOG.info('Audit server starting...')
 
 var app = module.exports = express.createServer()
 
@@ -112,7 +116,7 @@ function MessageHandler(user) {
 function startListeningWhenAllChildrenReady() {
 	if (numberOfChildProcessesThatAreStillInitializing === 0) {
 		app.listen(9090);
-		console.log("Audit server listening on port %d in %s mode", app.address().port, app.settings.env)
+		LOG.info('Audit server listening on port '+app.address().port+' in '+app.settings.env+' mode')
 
 		if (process.send) {
 			process.send({"status": "running", "port" : app.address().port })
@@ -121,7 +125,7 @@ function startListeningWhenAllChildrenReady() {
 }
 
 function stopAuditServerWhenChildExits() {
-	console.log('Child process died, Auditserver must be stopped')
+	LOG.error('Child process died, Auditserver must be stopped')
 	process.kill()
 }
 
@@ -132,7 +136,7 @@ function endsWith(str, suffix) {
 function readUserListAndPopulateChildren(asRoot) {
 	fs.readdir(auditserver.config.keydir, function(err, files) {
 		if (err) {
-			console.log('Could not list files in key directory. Exiting...')
+			LOG.error('Could not list files in key directory. Exiting...')
 			process.exit(1)
 		}
 		populateChildren(files, asRoot)
@@ -144,10 +148,17 @@ function populateChildren(files, asRoot) {
 
 	for (var i = 0; i < files.length; i++) {
 		if (endsWith(files[i], '.pem')) {
-			var usr = files[i].substring(0, files[i].length - 4)	
+			var usr = files[i].substring(0, files[i].length - 4)
+			var args = ''
+			if (asRoot) {
+				args += '--username ' + usr
+			}
+			if (program.debug) {
+				args += '--debug '
+			}
 			var p = cp.fork(
 				__dirname + '/lib/handlerprocess/process.js', 
-				asRoot ? ('--username ' + usr).split(' ') : undefined)
+				args.split(' '))
 			p.on('message', new MessageHandler(usr).handleChildProcessMessage)
 			p.on('exit', stopAuditServerWhenChildExits)
 			auditserver.children[usr] = p

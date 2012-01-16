@@ -15,6 +15,21 @@ function start() {
     fi
 }
 
+function debug() {
+    if [ -f /var/run/auditserver/auditserver.pid ]
+    then
+        echo "Auditserver already running. First stop or try the restart option."
+        exit 1
+    else
+        #sudo -u auditserver /usr/local/bin/node audit-server.js --debug > /var/log/auditserver/auditserver.log 2> /var/log/auditserver/auditserver.err &
+        /usr/local/bin/node  $(dirname $0)/audit-server.js --debug > /var/log/auditserver/auditserver.log 2> /var/log/auditserver/auditserver.err &
+
+        PID=$!
+        echo $PID > /var/run/auditserver/auditserver.pid
+        exit 0
+    fi
+}
+
 function stop() {
     if [ -f /var/run/auditserver/auditserver.pid ]
     then
@@ -32,6 +47,10 @@ case "$1" in
             start
             ;;
          
+        debug)
+            debug
+            ;;
+         
         stop)
             stop
             ;;
@@ -42,6 +61,6 @@ case "$1" in
             ;;
 
         *)
-            echo $"Usage: $0 {start|stop|restart}"
+            echo $"Usage: $0 {start|stop|restart|debug}"
             exit 1
 esac

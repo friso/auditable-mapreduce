@@ -28,6 +28,7 @@ function RecipeRunner(request, response) {
 	this.run = function() {
 		self.once('verified', populateSandbox)
 		self.once('notverified', function(statusCode, message) {
+			LOG.debug('Request not valid! ['+message+']['+this.request+']')
 			this.response.writeHead(statusCode, { 'Content-Type':'text/plain'})
 			this.response.end(message)
 		})
@@ -100,10 +101,12 @@ function RecipeRunner(request, response) {
 		}
 		
 		function reconnect(digest) {
+			LOG.debug('Reconnecting to currently running recipe')
 			auditserver.emitters[digest].on('output', processOutput).on('end', endOutput)		
 		}
 		
-		function populateSandbox() {			
+		function populateSandbox() {
+			LOG.debug('Start processing the request')
 			var token =	UUID.generate()
 			auditserver.createEmitter(token, self.signature).on('output', processOutput).on('end', endOutput)		
 			

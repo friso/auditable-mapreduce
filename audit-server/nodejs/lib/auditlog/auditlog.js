@@ -15,7 +15,7 @@ function Auditlog(logDir, fileName, callback) {
 		if (self.verify(auditlogRecord)) {
 			self.file.write(self.stringify(auditlogRecord))
 		} else {
-			console.log('bad logrecord: '+auditlogRecord)
+			LOG.error('bad logrecord: '+auditlogRecord)
 		}
 	}
 	

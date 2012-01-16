@@ -7,7 +7,7 @@ exports.setUp = function(callback) {
 		switch (m.type) {
 			case 'HANDLER_READY_FOR_CONFIG' :
 				handler.send({ type : 'CONFIGURATION', 
-				config : {
+					config : {
 						basedir : __dirname,
 						keydir : __dirname + '/keys/',
 						recipedir : __dirname + '/recipe-templates/',
