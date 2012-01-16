@@ -1,19 +1,28 @@
 var fs = require('fs')
+var CONFIG = require('config').audit
+
 var FILEOPTIONS = {flags: "a", encoding: "utf-8", mode: 0660}
 
-module.exports.createAuditlog = function(logDir, fileName, callback) {
-	return new Auditlog(logDir, fileName, callback)
+module.exports.createAuditlog = function() {
+	return new Auditlog()
 }
 
-function Auditlog(logDir, fileName, callback) {
-	this.file = fs.createWriteStream(logDir + '/' + fileName, FILEOPTIONS)
-	this.callback = callback
+function Auditlog() {
+	if (CONFIG.type === 'FILE') {
+		var logDir = CONFIG.FILE.logdir
+		var fileName = CONFIG.FILE.filename
+		this.file = fs.createWriteStream(logDir + '/' + fileName, FILEOPTIONS)
+	}
 	
 	var self = this
 	
-	this.syslog = function(auditlogRecord) {
+	this.log = function(auditlogRecord) {
 		if (self.verify(auditlogRecord)) {
-			self.file.write(self.stringify(auditlogRecord))
+			if (CONFIG.type === 'FILE') {
+				self.file.write(self.stringify(auditlogRecord))
+			} else {
+				LOG.error('TODO implement syslog')
+			}
 		} else {
 			LOG.error('bad logrecord: '+auditlogRecord)
 		}

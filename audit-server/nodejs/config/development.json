@@ -1,0 +1,12 @@
+{
+	"audit" : {
+		"type" : "FILE", 
+		"FILE" : {
+			"logdir" : "/var/log/auditserver/",
+			"filename" : "audit-development.log"
+		},
+		"SYSLOG" : {
+			"facility" : "audit"
+		}
+	}
+}

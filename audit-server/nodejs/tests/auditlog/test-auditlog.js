@@ -1,20 +1,23 @@
+process.env.NODE_ENV='test'
+
 var auditlog = require('../../lib/auditlog')
 var fs = require('fs')
 var logger, validAuditlogRecord, invalidAuditlogRecord;
 
 exports.setUp = function(callback) {
-    logger = auditlog.createAuditlog('/tmp', 'canCreateAnAuditlogFile.log', function(err) {console.log(err)})
+	
+    logger = auditlog.createAuditlog()
     validAuditlogRecord = {
-    	"user":"userName"
-       ,"token": "uuid-1234"
-       ,"identifier" : "RECIPE"
-       ,"sequence" : 1
-       , "stuff" : { "stuffding1" : "value" }
+    	user : "userName"
+       ,token : "uuid-1234"
+       ,identifier : "RECIPE"
+       ,sequence : 1
+       ,stuff : { "stuffding1" : "value" }
     }
     invalidAuditlogRecord = {
-    	"userr":"userName"
-       ,"identifier" : "RECIPE"
-       ,"sequence" : 1
+    	userr :"userName"
+       ,identifier : "RECIPE"
+       ,sequence : 1
     }
 	callback()
 }
@@ -59,8 +62,8 @@ exports.canStringifyACorrectAuditlogRecord = function(test){
 
 exports.canLogACorrectAuditlogRecord = function(test){
     test.expect(1)
-    logger.syslog(validAuditlogRecord)
-    logger.syslog(validAuditlogRecord)
+    logger.log(validAuditlogRecord)
+    logger.log(validAuditlogRecord)
     fs.readFile('/tmp/canCreateAnAuditlogFile.log', 'utf8', function (err,data) {
   		if (err) {
   			test.ok(false, 'audit log file NOT correctly written')

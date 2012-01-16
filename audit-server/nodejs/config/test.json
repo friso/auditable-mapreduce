@@ -1,0 +1,12 @@
+{
+	"audit" : {
+		"type" : "FILE", 
+		"FILE" : {
+			"logdir" : "/tmp",
+			"filename" : "canCreateAnAuditlogFile.log"
+		},
+		"SYSLOG" : {
+			"facility" : "audit"
+		}
+	}
+}
