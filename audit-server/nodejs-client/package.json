@@ -5,6 +5,7 @@
   , "dependencies": {
       "commander": "0.5.1"
     , "libxmljs": "0.4.3"
+    , "winston": "0.5.9"
   }
   , "scripts": { "test" : "bash tests.sh"
                , "integration" : "bash integration-tests.sh"

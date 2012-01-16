@@ -3,6 +3,7 @@ var fs = require('fs')
 var crypto = require('crypto')
 var http = require('http')
 
+var logFactory = require('./lib/logging')
 var config = require('./lib/config')
 var hconf = require('./lib/hconf')
 var git = require('./lib/git')
@@ -14,68 +15,124 @@ program
 	.option('-f, --filename <filename>', 'The file containing the recipe and variables to use for running.')
 	.option('-g, --gitdirectory [gitdirectory]', 'The dir containing the git repo and tree.')
 	.option('-h, --host [host]', 'The host to call the url.')
+	.option('-d, --debug', 'Enable debug logging.')
 	.parse(process.argv)
 
 program.gitdirectory = program.gitdirectory || process.cwd()
 program.host = program.host || 'localhost'
 
+global.LOG = logFactory.getLogger(program.debug)
+
 checkInput(createauditServerRequest)
 
 function checkInput(callback) {
-	fs.stat(program.filename, function(err, stats) {
-		if (err) {
-			console.log('Error checking '+program.filename+': '+err)
-			exit(1)
-		} else {
-			if (!stats.isFile()) {
-				console.log('Error: '+program.filename+' is not a File')
+	checkFileName(function() {
+		checkGitDirectory(function() {
+			checkPrivateKeyFile(function() {
+				checkHadoopConfDir(function() {
+					checkAuditserverUser(callback)
+				})
+			})
+		})
+	})
+}
+
+function checkFileName(callback) {
+	if (!program.filename) {
+		LOG.error("Program started without filename parameter")
+		exit(1)
+	} else {
+		fs.stat(program.filename, function(err, stats) {
+			if (err) {
+				LOG.error('Error checking '+program.filename+': '+err)
 				exit(1)
 			} else {
-				fs.stat(program.gitdirectory, function(err, stats) {
-					if (err) {
-						console.log('Error checking '+program.gitdirectory+': '+err)
-						exit(1)
-					} else {
-						if (!stats.isDirectory()) {
-							console.log('Error: '+program.gitdirectory+' is not a Directory')
-							exit(1)
-						} else {
-							fs.stat(process.env.AUDITSERVER_PRIVATE_KEY, function(err, stats) {
-								if (err) {
-									console.log('Error checking env var AUDITSERVER_PRIVATE_KEY:['+process.env.AUDITSERVER_PRIVATE_KEY+']: '+err)
-									exit(1)
-								} else {
-									if (!stats.isFile()) {
-										console.log('Error: env var AUDITSERVER_PRIVATE_KEY:['+process.env.AUDITSERVER_PRIVATE_KEY+'] is not a File')
-										exit(1)
-									} else {
-										fs.stat(process.env.AUDITSERVER_HADOOP_CONF_DIR, function(err, stats) {
-											if (err) {
-												console.log('Error checking env var AUDITSERVER_HADOOP_CONF_DIR:['+process.env.AUDITSERVER_HADOOP_CONF_DIR+']: '+err)
-												exit(1)
-											} else {
-												if (!stats.isDirectory()) {
-													console.log('Error: env var AUDITSERVER_HADOOP_CONF_DIR:['+process.env.AUDITSERVER_HADOOP_CONF_DIR+'] is not a Directory')
-													exit(1)
-												} else {
-													if (!process.env.AUDITSERVER_USER || process.env.AUDITSERVER_USER == '') {
-														console.log('Error: env var AUDITSERVER_USER:['+process.env.AUDITSERVER_USER+'] is not valid')
-														exit(1)											
-													} else {
-														callback()
-													}
-												}
-											}
-										})
-									}
-								}
-							})
-						}
-					}
-				})
+				if (!stats.isFile()) {
+					LOG.error('Error: '+program.filename+' is not a File')
+					exit(1)
+				} else {
+					LOG.debug('Using '+program.filename+' as input')
+					callback()
+				}
 			}
-		}
-	})
+		})
+	}
+}
+
+function checkGitDirectory(callback) {
+	if (!program.gitdirectory) {
+		LOG.error("Program started without gitdirectory parameter")
+		exit(1)
+	} else {
+		fs.stat(program.gitdirectory, function(err, stats) {
+			if (err) {
+				LOG.error('Error checking '+program.gitdirectory+': '+err)
+				exit(1)
+			} else {
+				if (!stats.isDirectory()) {
+					LOG.error('Error: '+program.gitdirectory+' is not a Directory')
+					exit(1)
+				} else {
+					LOG.debug('Using '+program.gitdirectory+' as its git directory')
+					callback()
+				}
+			}
+		})
+	}
+}
+
+function checkPrivateKeyFile(callback) {
+	if (!process.env.AUDITSERVER_PRIVATE_KEY) {
+		LOG.error('Environment variable AUDITSERVER_PRIVATE_KEY not set')
+		exit(1)
+	} else {
+		fs.stat(process.env.AUDITSERVER_PRIVATE_KEY, function(err, stats) {
+			if (err) {
+				LOG.error('Error checking env var AUDITSERVER_PRIVATE_KEY:['+process.env.AUDITSERVER_PRIVATE_KEY+']: '+err)
+				exit(1)
+			} else {
+				if (!stats.isFile()) {
+					LOG.error('Error: env var AUDITSERVER_PRIVATE_KEY:['+process.env.AUDITSERVER_PRIVATE_KEY+'] is not a File')
+					exit(1)
+				} else {
+					LOG.debug('Using '+process.env.AUDITSERVER_PRIVATE_KEY+' as private key file for signing the request')
+					callback()
+				}
+			}
+		})
+	}
+}
+
+function checkHadoopConfDir(callback) {
+	if (!process.env.AUDITSERVER_HADOOP_CONF_DIR) {
+		LOG.error('Environment variable AUDITSERVER_HADOOP_CONF_DIR not set')
+		exit(1)	
+	} else {
+		fs.stat(process.env.AUDITSERVER_HADOOP_CONF_DIR, function(err, stats) {
+			if (err) {
+				LOG.error('Error checking env var AUDITSERVER_HADOOP_CONF_DIR:['+process.env.AUDITSERVER_HADOOP_CONF_DIR+']: '+err)
+				exit(1)
+			} else {
+				if (!stats.isDirectory()) {
+					LOG.error('Error: env var AUDITSERVER_HADOOP_CONF_DIR:['+process.env.AUDITSERVER_HADOOP_CONF_DIR+'] is not a Directory')
+					exit(1)
+				} else {
+					LOG.debug('Using '+process.env.AUDITSERVER_HADOOP_CONF_DIR+' as hadoop conf dir')
+					callback()
+				}
+			}
+		})
+	}
+}
+
+function checkAuditserverUser(callback) {
+	if (!process.env.AUDITSERVER_USER || process.env.AUDITSERVER_USER == '') {
+		LOG.error('Error: env var AUDITSERVER_USER:['+process.env.AUDITSERVER_USER+'] is not valid')
+		exit(1)											
+	} else {
+		LOG.debug('Using '+process.env.AUDITSERVER_USER+' as user for the auditserver request')
+		callback()
+	}
 }
 
 function createauditServerRequest() {
@@ -83,13 +140,13 @@ function createauditServerRequest() {
 
 	configuration.parse(function(err, recipeConfig) {
 		if (err) {
-			console.log(err)
+			LOG.error(err)
 			exit(1)
 		} else {
 			hadoopConfig = hconf.createConfig(process.env.AUDITSERVER_HADOOP_CONF_DIR)
 			hadoopConfig.jsonify(function(err, hadoopConfig) {
 				if (err) {
-					console.log(err)
+					LOG.error(err)
 					exit(1)
 				} else {
 					var postData = recipeConfig
@@ -97,12 +154,12 @@ function createauditServerRequest() {
 					var	gitinfo = git.createGitInfo(program.gitdirectory)
 			    	gitinfo.getUrl(function(err, gitUrl) {
 						if (err) {
-							console.log(err)
+							LOG.error(err)
 							exit(1)
 						} else {
 							gitinfo.getTree(function(err, gitTree) {
 								if (err) {
-									console.log(err)
+									LOG.error(err)
 									exit(1)
 								} else {
 									var port = 9090
@@ -145,7 +202,7 @@ function createauditServerRequest() {
 		}
 	})
 }	
-	
+
 function doPostRequest(options, data, callback) {
 	var responseData = ''
 	var req = http.request(options, function(res) {
@@ -164,7 +221,7 @@ function doPostRequest(options, data, callback) {
 }
 
 function onEndOfRequest(res, responseData) {
-	console.log('Run finished with code: '+res.statusCode)
+	LOG.info('Run finished with code: '+res.statusCode)
 	exit(res.statusCode)
 }
 
