@@ -102,6 +102,15 @@ function RecipeRunner(request, response) {
 		
 		function reconnect(digest) {
 			LOG.debug('Reconnecting to currently running recipe')
+			
+			var auditlogRecord = {
+		    	user : self.user,
+      			token : auditserver.tokens[digest],
+       			identifier : "RECONNECT-REQUEST",
+       			sequence : 1
+			}
+			auditserver.auditlog.log(auditlogRecord)
+
 			auditserver.emitters[digest].on('output', processOutput).on('end', endOutput)		
 		}
 		
@@ -121,6 +130,15 @@ function RecipeRunner(request, response) {
 				hconf : self.config
 			}
 			
+			var auditlogRecord = {
+		    	user : self.user,
+      			token : token,
+       			identifier : "RUN-REQUEST",
+       			sequence : 1,
+       			meta : request
+			}
+			auditserver.auditlog.log(auditlogRecord)
+			
 			self.response.writeHead(200, { 'Content-Type':'text/plain'})
 			auditserver.children[self.user].send(request)			
 		}
@@ -137,6 +155,15 @@ function RecipeRunner(request, response) {
 		function endOutput(message) {
 			processOutput(message)
 			self.response.end()
+
+			var auditlogRecord = {
+		    	user : self.user,
+      			token : token,
+       			identifier : "RUN-REQUEST",
+       			sequence : 2,
+       			meta : 'Request Finished'
+			}
+			auditserver.auditlog.log(auditlogRecord)
 		}		
 	}
 }

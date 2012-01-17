@@ -9,6 +9,8 @@ var program = require('commander')
 var routes = require('./routes')
 var logFactory = require('./lib/logging')
 
+process.title = 'audit'
+
 program
 	.version('0.0.1')
 	.usage('<options>')
@@ -39,13 +41,16 @@ global.auditserver = {
 	children : [],
 	emitters : [],
 	digests : [],
+	tokens : [],
 	createEmitter : function(token, digest) {
 		var e = new events.EventEmitter()
 		auditserver.emitters[token] = e
 		auditserver.emitters[digest] = e
 		auditserver.digests[token] = digest
+		auditserver.tokens[digest] = token
 		return e
-	}
+	},
+	auditlog : require('./lib/auditlog').createAuditlog()
 }
 
 LOG.info('Audit server starting...')
@@ -93,7 +98,8 @@ function MessageHandler(user) {
 			case 'HANDLER_READY_FOR_CONFIG':
 				auditserver.children[self.user].send({
 					type : 'CONFIGURATION',
-					config : auditserver.config
+					config : auditserver.config,
+					auditlog : auditserver.auditlog
 				})
 				break
 			case 'HANDLER_READY':
@@ -107,6 +113,8 @@ function MessageHandler(user) {
 				auditserver.emitters[message.token].emit('end', message)
 				delete auditserver.emitters[message.token]
 				delete auditserver.emitters[auditserver.digests[message.token]]
+				delete auditserver.tokens[auditserver.digests[message.token]]
+				delete auditserver.digests[message.token]
 				break
 		}
 	}

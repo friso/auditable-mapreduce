@@ -27,6 +27,18 @@ function ChallengeRunner(req, res) {
 			self.sha1 = req.params['sha1']
 			self.sandboxdir = auditserver.config.sandboxdir + '/' + self.user + '-' + self.token
 			
+			var auditlogRecord = {
+		    	user : self.user,
+      			token : self.token,
+       			identifier : "CHALLENGE-REQUEST",
+       			sequence : 1,
+       			meta : {
+       				jar : self.jarname,
+       				sha1 : self.sha1
+       			}
+			}
+			auditserver.auditlog.log(auditlogRecord)
+
 			//check that user + sandbox combo exists
 			fs.stat(self.sandboxdir, handleSandboxStat)
 		})
@@ -121,6 +133,22 @@ function ChallengeRunner(req, res) {
 				reason : why
 			}))
 			self.response.end()
+			
+			var auditlogRecord = {
+		    	user : self.user,
+      			token : self.token,
+       			identifier : "CHALLENGE-REQUEST",
+       			sequence : 2,
+       			meta : {
+       				jar : self.jarname,
+       				sha1 : self.sha1,
+       				result : 'NOK',
+       				code : code,
+       				reason : why
+       			}
+			}
+			auditserver.auditlog.log(auditlogRecord)
+
 		}
 		
 		function replyOk(why) {
@@ -130,6 +158,22 @@ function ChallengeRunner(req, res) {
 				reason : why
 			}))
 			self.response.end()
+
+			var auditlogRecord = {
+		    	user : self.user,
+      			token : self.token,
+       			identifier : "CHALLENGE-REQUEST",
+       			sequence : 2,
+       			meta : {
+       				jar : self.jarname,
+       				sha1 : self.sha1,
+       				result : 'OK',
+       				code : 200,
+       				reason : why
+       			}
+			}
+			auditserver.auditlog.log(auditlogRecord)
+
 		}
 		
 		function endsWith(str, suffix) {

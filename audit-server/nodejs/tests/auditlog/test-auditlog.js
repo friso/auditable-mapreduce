@@ -2,7 +2,11 @@ process.env.NODE_ENV='test'
 
 var auditlog = require('../../lib/auditlog')
 var fs = require('fs')
+var logFactory = require('../../lib/logging')
+
 var logger, validAuditlogRecord, invalidAuditlogRecord;
+
+global.LOG = logFactory.getLogger(false)
 
 exports.setUp = function(callback) {
 	
@@ -23,7 +27,11 @@ exports.setUp = function(callback) {
 }
 
 exports.tearDown = function(callback) {
-	fs.unlinkSync('/tmp/canCreateAnAuditlogFile.log')
+	try {
+		fs.unlinkSync('/tmp/canCreateAnAuditlogFile.log')
+	} catch (e) {
+		//Ignore file not existing
+	}
 	callback()
 }
 
@@ -50,13 +58,6 @@ exports.canVerifyAInCorrectAuditlogRecord = function(test){
     test.expect(1)
     var result = logger.verify(invalidAuditlogRecord)
     test.equals(result, false, 'invalid audit log record succesfully verified')
-    test.done()
-}
-
-exports.canStringifyACorrectAuditlogRecord = function(test){
-    test.expect(1)
-    var result = logger.stringify(validAuditlogRecord)
-    test.equals(result, '{"user":"userName","token":"uuid-1234","identifier":"RECIPE","sequence":1,"stuff":{"stuffding1":"value"}}\n', 'audit log record succesfully verified')
     test.done()
 }
 
