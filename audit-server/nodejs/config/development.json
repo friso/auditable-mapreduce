@@ -1,6 +1,6 @@
 {
 	"audit" : {
-		"type" : "SYSLOG", 
+		"type" : "FILE", 
 		"FILE" : {
 			"logdir" : "/var/log/auditserver/",
 			"filename" : "audit-development.log"
@@ -10,7 +10,7 @@
 		    "port": 514, //The port on the host that syslog is running on, defaults to syslogd's default port.
 		    "protocol" : "udp4" , //The network protocol to log over (e.g. tcp4, udp4, etc).
 		    "facility" : "audit", //Syslog facility to use (Default: local0).
-		    "type": "BSD"//The type of the syslog protocol to use (Default: BSD).
+		    "type": "BSD" //The type of the syslog protocol to use (Default: BSD).
 		}
 	}
 }

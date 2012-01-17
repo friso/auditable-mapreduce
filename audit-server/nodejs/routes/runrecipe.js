@@ -158,7 +158,7 @@ function RecipeRunner(request, response) {
 
 			var auditlogRecord = {
 		    	user : self.user,
-      			token : token,
+      			token : message.token,
        			identifier : "RUN-REQUEST",
        			sequence : 2,
        			meta : 'Request Finished'
