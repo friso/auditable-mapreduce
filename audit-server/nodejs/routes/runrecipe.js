@@ -29,6 +29,19 @@ function RecipeRunner(request, response) {
 		self.once('verified', populateSandbox)
 		self.once('notverified', function(statusCode, message) {
 			LOG.debug('Request not valid! ['+message+']['+this.request+']')
+
+			var auditlogRecord = {
+		    	user : self.user,
+      			token : self.token,
+       			identifier : "RUN-REQUEST-NOT-VERIFIED",
+       			sequence : 1,
+       			meta : {
+       				status: statusCode,
+       				reason: message
+       			}
+			}
+			auditserver.auditlog.log(auditlogRecord)
+			
 			this.response.writeHead(statusCode, { 'Content-Type':'text/plain'})
 			this.response.end(message)
 		})
@@ -52,8 +65,20 @@ function RecipeRunner(request, response) {
 	
 	    		var requestObject =	self.url + d
 		    	var signature = req.header('X-AuditSignature') || ''
+
+				self.token = UUID.generate()
 		    	
 		    	verify(requestObject, signature)
+	    	})
+	    	
+	    	req.on('close', function(err) {
+				var auditlogRecord = {
+			    	user : self.user,
+      				token : self.token,
+       				identifier : "DISCONNECT-REQUEST",
+       				sequence : 1
+				}
+				auditserver.auditlog.log(auditlogRecord)
 	    	})
 		}
 
@@ -86,6 +111,7 @@ function RecipeRunner(request, response) {
 								if (verifier.verify(publicKey, signature, 'base64')) {
 									self.signature = signature
 									if (auditserver.emitters[signature]) {
+										self.token = auditserver.tokens[signature]
 										self.emit('reconnected', signature)
 									} else {
 										self.emit('verified')
@@ -105,7 +131,7 @@ function RecipeRunner(request, response) {
 			
 			var auditlogRecord = {
 		    	user : self.user,
-      			token : auditserver.tokens[digest],
+      			token : self.token,
        			identifier : "RECONNECT-REQUEST",
        			sequence : 1
 			}
@@ -116,12 +142,11 @@ function RecipeRunner(request, response) {
 		
 		function populateSandbox() {
 			LOG.debug('Start processing the request')
-			var token =	UUID.generate()
-			auditserver.createEmitter(token, self.signature).on('output', processOutput).on('end', endOutput)		
+			auditserver.createEmitter(self.token, self.signature).on('output', processOutput).on('end', endOutput)		
 			
 			var request = {
 				type : 'HANDLE_REQUEST',
-				token : token,
+				token : self.token,
 				user : self.user,
 				gitRepo : self.gitRepo,
 				gitTree : self.gitTree,
@@ -132,7 +157,7 @@ function RecipeRunner(request, response) {
 			
 			var auditlogRecord = {
 		    	user : self.user,
-      			token : token,
+      			token : self.token,
        			identifier : "RUN-REQUEST",
        			sequence : 1,
        			meta : request
