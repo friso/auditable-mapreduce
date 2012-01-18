@@ -1,5 +1,6 @@
-var winston = require('winston')
 var CONFIG = require('config').audit
+var winston = require('winston')
+var SysLogger = require('ain2');
 
 module.exports.createAuditlog = function(callback) {
 	return new Auditlog(callback)
@@ -25,25 +26,12 @@ function Auditlog(callback) {
     		levels : { info: 0 }
 		})	  	
 	} else if (CONFIG.type === 'SYSLOG') {	
-	/*
-		require('winston-syslog').Syslog
-		self.logger = new (winston.Logger)({
-	   		transports: [
-				new (winston.transports.Syslog)({
-			    	host: CONFIG.SYSLOG.host,
-	   				port: CONFIG.SYSLOG.port,
-		    		protocol: CONFIG.SYSLOG.protocol,
-		    		facility: CONFIG.SYSLOG.facility,	
-	    			type: CONFIG.SYSLOG.type
-				})
-			],
-			levels : winston.config.syslog.levels
+		self.logger = new SysLogger({
+			tag: CONFIG.SYSLOG.tag,
+			facility: CONFIG.SYSLOG.facility,
+			hostname : CONFIG.SYSLOG.host,
+			port: CONFIG.SYSLOG.port
 		})
-
-		self.logger.on('error', function(err) {
-			LOG.error(JSON.stringify(err))
-		})	
-	*/
 	}
 	
 	this.log = function(auditlogRecord) {
@@ -53,14 +41,7 @@ function Auditlog(callback) {
 				LOG.debug('Writing auditlog to file ['+message+']')
 				self.logger.info(message)
 			} else if (CONFIG.type === 'SYSLOG') {
-				/*
-				self.logger.log('info', message, function(err) {
-					if (err) {
-						LOG.error('Unable to log to syslog. No auditing enabled so exiting application ['+err+']')
-						process.exit(1)
-					}
-				})
-			*/
+				self.logger.send(message, 'info')
 			} else {
 				LOG.error('Uninplemented audit type '+CONFIG.type)
 				process.exit(1)

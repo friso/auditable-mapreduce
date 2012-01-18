@@ -1,0 +1,11 @@
+switching between auditlogging type's is done easily by sertting type: "FILE" for file logging and
+type: "SYSLOG" for logging to syslog
+
+to make syslog aware you need to change the /etc/syslog.conf file
+
+add something like this:
+
+local5.*						/var/log/auditserver/audit.log
+
+and restart syslogd
+
