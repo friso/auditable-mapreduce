@@ -50,8 +50,11 @@ global.auditserver = {
 		auditserver.tokens[digest] = token
 		return e
 	},
-	auditlog : require('./lib/auditlog').createAuditlog()
 }
+
+require('./lib/auditlog').createAuditlog(function(auditlogger) {
+	auditserver['auditlog'] = auditlogger
+})
 
 LOG.info('Audit server starting...')
 

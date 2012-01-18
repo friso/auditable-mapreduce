@@ -4,13 +4,12 @@ var auditlog = require('../../lib/auditlog')
 var fs = require('fs')
 var logFactory = require('../../lib/logging')
 
-var logger, validAuditlogRecord, invalidAuditlogRecord;
+var logger, validAuditlogRecord,validAuditlogRecord2, invalidAuditlogRecord;
 
 global.LOG = logFactory.getLogger(false)
 
 exports.setUp = function(callback) {
 	
-    logger = auditlog.createAuditlog()
     validAuditlogRecord = {
     	user : "userName"
        ,token : "uuid-1234"
@@ -18,12 +17,22 @@ exports.setUp = function(callback) {
        ,sequence : 1
        ,stuff : { "stuffding1" : "value" }
     }
+    validAuditlogRecord2 = {
+    	user : "userName2"
+       ,token : "uuid-1235"
+       ,identifier : "RECIPE2"
+       ,sequence : 2
+       ,stuff : { "stuffding2" : "value" }
+    }
     invalidAuditlogRecord = {
     	userr :"userName"
        ,identifier : "RECIPE"
        ,sequence : 1
     }
-	callback()
+    auditlog.createAuditlog(function(auditlogger) {
+    	logger = auditlogger
+    	callback()
+    })
 }
 
 exports.tearDown = function(callback) {
@@ -35,18 +44,6 @@ exports.tearDown = function(callback) {
 	callback()
 }
 
-exports.canCreateAnAuditlogFile = function(test){
-    test.expect(1)
-    fs.readFile('/tmp/canCreateAnAuditlogFile.log', 'utf8', function (err,data) {
-  		if (err) {
-  			test.ok(false, 'audit log file NOT correctly created')
-  		} else {
-  			test.ok(true, 'audit log file correctly created')
-  		}
-	    test.done()
-	})
-}
-
 exports.canVerifyACorrectAuditlogRecord = function(test){
     test.expect(1)
     var result = logger.verify(validAuditlogRecord)
@@ -54,7 +51,7 @@ exports.canVerifyACorrectAuditlogRecord = function(test){
     test.done()
 }
 
-exports.canVerifyAInCorrectAuditlogRecord = function(test){
+exports.cannotVerifyAInCorrectAuditlogRecord = function(test){
     test.expect(1)
     var result = logger.verify(invalidAuditlogRecord)
     test.equals(result, false, 'invalid audit log record succesfully verified')
@@ -62,17 +59,23 @@ exports.canVerifyAInCorrectAuditlogRecord = function(test){
 }
 
 exports.canLogACorrectAuditlogRecord = function(test){
-    test.expect(1)
-    logger.log(validAuditlogRecord)
-    logger.log(validAuditlogRecord)
-    fs.readFile('/tmp/canCreateAnAuditlogFile.log', 'utf8', function (err,data) {
-  		if (err) {
-  			test.ok(false, 'audit log file NOT correctly written')
-  		} else {
-  			test.equals(data, '{"user":"userName","token":"uuid-1234","identifier":"RECIPE","sequence":1,"stuff":{"stuffding1":"value"}}\n{"user":"userName","token":"uuid-1234","identifier":"RECIPE","sequence":1,"stuff":{"stuffding1":"value"}}\n', 'audit log file correctly created')
+    test.expect(4)
+    var numberOfLogRecordsLogged = 0
+    
+    logger.logger.on('logging', function (transport, level, msg, meta) {
+  		numberOfLogRecordsLogged++
+  		if (numberOfLogRecordsLogged == 1) {
+	  		test.equals(level, 'info', 'audit logrecord logged at the wrong level')
+  			test.equals(msg, '{"user":"userName","token":"uuid-1234","identifier":"RECIPE","sequence":1,"stuff":{"stuffding1":"value"}}', 'audit logrecord not correctly logged')
+  		} else if (numberOfLogRecordsLogged == 2) {
+	  		test.equals(level, 'info', 'audit logrecord logged at the wrong level')
+  			test.equals(msg, '{"user":"userName2","token":"uuid-1235","identifier":"RECIPE2","sequence":2,"stuff":{"stuffding2":"value"}}', 'audit logrecord2 not correctly logged')
+  			test.done()
   		}
-	    test.done()
-	})
+	});
+
+    logger.log(validAuditlogRecord)
+    logger.log(validAuditlogRecord2)
 }
 
 

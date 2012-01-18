@@ -1,53 +1,66 @@
-var fs = require('fs')
+var winston = require('winston')
 var CONFIG = require('config').audit
 
-var FILEOPTIONS = {flags: "a", encoding: "utf-8", mode: 0660}
-
-module.exports.createAuditlog = function() {
-	return new Auditlog()
+module.exports.createAuditlog = function(callback) {
+	return new Auditlog(callback)
 }
 
-function Auditlog() {
+function Auditlog(callback) {
+	var logger;
+	var self = this
+	
 	if (CONFIG.type === 'FILE') {
 		var logDir = CONFIG.FILE.logdir
 		var fileName = CONFIG.FILE.filename
-		this.file = fs.createWriteStream(logDir + '/' + fileName, FILEOPTIONS)
+ 		self.logger = new (winston.Logger)({
+	   		transports: [
+				new (winston.transports.File)({
+        			level: 'info',
+       				colorize: false,
+					filename: logDir + '/' + fileName,
+					json : false,
+					timestamp: true
+	   			})
+			],
+    		levels : { info: 0 }
+		})	  	
 	} else if (CONFIG.type === 'SYSLOG') {	
-		var winston = require('winston')
+	/*
 		require('winston-syslog').Syslog
-		this.syslog = new (winston.Logger)({
-	    	transports: [
+		self.logger = new (winston.Logger)({
+	   		transports: [
 				new (winston.transports.Syslog)({
-				    host: CONFIG.SYSLOG.host,
-    				port: CONFIG.SYSLOG.port,
+			    	host: CONFIG.SYSLOG.host,
+	   				port: CONFIG.SYSLOG.port,
 		    		protocol: CONFIG.SYSLOG.protocol,
 		    		facility: CONFIG.SYSLOG.facility,	
-		    		type: CONFIG.SYSLOG.type
+	    			type: CONFIG.SYSLOG.type
 				})
 			],
 			levels : winston.config.syslog.levels
 		})
 
-		this.syslog.on('error', function(err) {
+		self.logger.on('error', function(err) {
 			LOG.error(JSON.stringify(err))
 		})	
+	*/
 	}
-	
-	var self = this
 	
 	this.log = function(auditlogRecord) {
 		if (self.verify(auditlogRecord)) {
 			var message = JSON.stringify(auditlogRecord)
 			if (CONFIG.type === 'FILE') {
 				LOG.debug('Writing auditlog to file ['+message+']')
-				self.file.write(message+ '\n')
+				self.logger.info(message)
 			} else if (CONFIG.type === 'SYSLOG') {
-				self.syslog.log('info', message, function(err) {
+				/*
+				self.logger.log('info', message, function(err) {
 					if (err) {
 						LOG.error('Unable to log to syslog. No auditing enabled so exiting application ['+err+']')
 						process.exit(1)
 					}
 				})
+			*/
 			} else {
 				LOG.error('Uninplemented audit type '+CONFIG.type)
 				process.exit(1)
@@ -62,5 +75,9 @@ function Auditlog() {
 			return true
 		}
 		return false
+	}
+
+	if (typeof callback === 'function') {
+		callback(this)
 	}
 }
