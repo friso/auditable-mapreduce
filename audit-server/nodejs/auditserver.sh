@@ -6,7 +6,7 @@ function start() {
         echo "Auditserver already running. First stop or try the restart option."
         exit 1
     else
-        #sudo -u auditserver /usr/local/bin/node audit-server.js > /var/log/auditserver/auditserver.log 2> /var/log/auditserver/auditserver.err &
+        # /usr/bin/node /usr/local/auditserver/auditserver/audit-server.js > /var/log/auditserver/auditserver.log 2> /var/log/auditserver/auditserver.err &
         /usr/local/bin/node  $(dirname $0)/audit-server.js > /var/log/auditserver/auditserver.log 2> /var/log/auditserver/auditserver.err &
 
         PID=$!
@@ -21,7 +21,7 @@ function debug() {
         echo "Auditserver already running. First stop or try the restart option."
         exit 1
     else
-        #sudo -u auditserver /usr/local/bin/node audit-server.js --debug > /var/log/auditserver/auditserver.log 2> /var/log/auditserver/auditserver.err &
+        # /usr/bin/node /usr/local/auditserver/auditserver/audit-server.js --debug > /var/log/auditserver/auditserver.log 2> /var/log/auditserver/auditserver.err &
         /usr/local/bin/node  $(dirname $0)/audit-server.js --debug > /var/log/auditserver/auditserver.log 2> /var/log/auditserver/auditserver.err &
 
         PID=$!

@@ -10,6 +10,7 @@ var routes = require('./routes')
 var logFactory = require('./lib/logging')
 
 process.title = 'audit'
+process.chdir(__dirname)
 
 program
 	.version('0.0.1')
