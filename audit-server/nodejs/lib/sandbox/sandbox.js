@@ -15,6 +15,7 @@ function Sandbox(uuid, user, svnRepo, svnRevision) {
 	var self = this
 	
 	this.build = function(callback) {
+		LOG.debug("Creating sandbox dir: " + self.getDir())
 		fs.mkdir(self.getDir(), '0777', function(err) {
 			LOG.debug("Created sandbox dir: " + self.getDir())
 			if (err) {
