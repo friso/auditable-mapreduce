@@ -16,6 +16,9 @@ function Sandbox(uuid, user, svnRepo, svnRevision) {
 	
 	this.build = function(callback) {
 		fs.mkdir(self.getDir(), '0777', function(err) {
+			if (err) {
+				LOG.debug("Error creating sandbox dir: " + err)
+			}
 			childproc.execFile(
 				'/usr/bin/svn', 
 				['checkout', self.svnRepo, self.getDir() + '/checkout'],
