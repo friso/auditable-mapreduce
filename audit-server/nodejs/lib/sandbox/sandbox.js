@@ -16,6 +16,7 @@ function Sandbox(uuid, user, svnRepo, svnRevision) {
 	
 	this.build = function(callback) {
 		fs.mkdir(self.getDir(), '0777', function(err) {
+			LOG.debug("Created sandbox dir: " + self.getDir())
 			if (err) {
 				LOG.debug("Error creating sandbox dir: " + err)
 			}
@@ -58,7 +59,7 @@ function Sandbox(uuid, user, svnRepo, svnRevision) {
 	}
 	
 	this.cleanup = function(callback) {
-		removeRecursively(self.getDir(), {}, callback)
+		// removeRecursively(self.getDir(), {}, callback)
 	}
 	
 	this.getDir = function() {
