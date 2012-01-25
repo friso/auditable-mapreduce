@@ -1,7 +1,11 @@
 var recipe = require('../../lib/recipes')
+global.auditserver = {}
+global.auditserver['auditlog'] = new function() {
+	this.log = function(record) {}
+}
 
 exports.shouldCreateAndRunRecipe = function(test) {
-	var r = recipe.createRecipe(__dirname + '/test-recipe', { singleParam : 'single', arrayParam : ['more', 'stuff']}, __dirname, 'bash')
+	var r = recipe.createRecipe('test-user', 'UUID1234-BLAH-4321', __dirname + '/test-recipe', { singleParam : 'single', arrayParam : ['more', 'stuff']}, __dirname, 'bash')
 	var output = ''
 	r.on('output', function(data) {
 		output += data.out
@@ -17,7 +21,7 @@ exports.shouldCreateAndRunRecipe = function(test) {
 }
 
 exports.shouldReturnErrorObjectOnNonZeroExitCode = function(test) {
-	var r = recipe.createRecipe(__dirname + '/error-recipe', { singleParam : 'single', arrayParam : ['more', 'stuff']}, __dirname, 'bash')
+	var r = recipe.createRecipe('test-user', 'UUID1234-BLAH-4321', __dirname + '/error-recipe', { singleParam : 'single', arrayParam : ['more', 'stuff']}, __dirname, 'bash')
 	var output = ''
 	r.on('output', function(data) {
 		output += data.out

@@ -4,11 +4,13 @@ var childproc = require('child_process')
 var fs = require('fs')
 var templater = require('node-template')
 
-module.exports.createRecipe = function(templateFilename, templateVars, workingDir, shellCommand) {
-	return new Recipe(templateFilename, templateVars, workingDir, shellCommand)
+module.exports.createRecipe = function(user, token, templateFilename, templateVars, workingDir, shellCommand) {
+	return new Recipe(user, token, templateFilename, templateVars, workingDir, shellCommand)
 }
 
-function Recipe(templateFilename, templateVars, workingDir, shellCommand) {
+function Recipe(user, token, templateFilename, templateVars, workingDir, shellCommand) {
+	this.user = user
+	this.token = token
 	this.template = templater.create(fs.readFileSync(templateFilename).toString('utf8'))
 	this.templateVars = templateVars
 	this.cwd = workingDir
@@ -33,7 +35,25 @@ function Recipe(templateFilename, templateVars, workingDir, shellCommand) {
 				self.emit('output', {err : d.toString()})
 			})
 		
-		proc.stdin.write(self.template(self.templateVars))
+		var recipe = self.template(self.templateVars)
+		
+		var i=0
+		var auditlogRecord = {
+			user : self.user,
+      		token : self.token,
+       		identifier : "RECIPE",
+       		sequence : 0,
+       		meta : {
+       			recipeline: ''
+       		}
+		}
+		recipe.split('\n').forEach(function(line) {
+			auditlogRecord.meta.recipeline = line
+			auditlogRecord.sequence = ++i
+			auditserver.auditlog.log(auditlogRecord)
+		})
+		
+		proc.stdin.write(recipe)
 		proc.stdin.write('\nexit\n')
 	}
 }

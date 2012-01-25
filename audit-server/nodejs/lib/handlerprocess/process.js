@@ -21,6 +21,10 @@ program
 
 global.LOG = logFactory.getLogger(program.debug)
 
+require('../auditlog').createAuditlog(function(auditlogger) {
+	auditserver['auditlog'] = auditlogger
+})
+
 if (process.getuid() == 0) {
 	if (program.username) {
 		process.setuid(program.username)
@@ -34,7 +38,6 @@ process.on('message', function(m) {
 	switch(m.type) {
 		case 'CONFIGURATION':
 			global.auditserver.config = m.config
-			global.auditserver.auditlog = m.auditlog
 			process.send({
 				type : 'HANDLER_READY'
 			})
@@ -92,6 +95,8 @@ function RequestHandler(m) {
 			} else {
 				LOG.debug('Creating the recipe from template '+self.message.recipeName)
 				var recipe = recipes.createRecipe(
+					self.message.user,
+					self.message.token,
 					auditserver.config.recipedir + '/' + self.message.recipeName, 
 					self.message.recipeVariables, 
 					self.box.getDir(), '/bin/bash')

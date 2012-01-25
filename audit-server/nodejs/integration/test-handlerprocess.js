@@ -37,9 +37,6 @@ exports.tearDown = function(callback) {
 }
 
 exports.shouldCreateSandboxAndRunRecipeWhenRequested = function(test) {
-	console.log('STRING:'+'file://' + __dirname + '/../tests/sandbox/local-svn-repo/test-repo/')
-	console.log('REPLACED:'+('file://' + __dirname + '/../tests/sandbox/local-svn-repo/test-repo/').replace('integration/../',''))
-	
 	var request = {
 		type : 'HANDLE_REQUEST',
 		token : '01234567-test-0123-0123',
