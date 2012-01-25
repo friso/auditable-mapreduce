@@ -165,7 +165,7 @@ function populateChildren(files, asRoot) {
 				args += '--username ' + usr
 			}
 			if (program.debug) {
-				args += '--debug '
+				args += ' --debug '
 			}
 			var p = cp.fork(
 				__dirname + '/lib/handlerprocess/process.js', 

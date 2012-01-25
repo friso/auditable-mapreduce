@@ -1,3 +1,4 @@
+#! /usr/local/bin/node
 var program = require('commander')
 var fs = require('fs')
 var crypto = require('crypto')
@@ -12,7 +13,7 @@ var svn = require('./lib/svn')
 program
 	.version('0.0.1')
 	.usage('<options>')
-	.option('-f, --filename <filename>', 'The file containing the recipe and variables to use for running.')
+	.option('-f, --filename [filename]', 'The file containing the recipe and variables to use for running.')
 	.option('-s, --svndirectory [svndirectory]', 'The dir containing the svn repo and revision.')
 	.option('-h, --host [host]', 'The host to call the url.')
 	.option('-d, --debug', 'Enable debug logging.')
@@ -20,6 +21,7 @@ program
 
 program.svndirectory = program.svndirectory || process.cwd()
 program.host = program.host || 'localhost'
+program.filename = program.filename || program.svndirectory + '/runconfig.json'
 
 global.LOG = logFactory.getLogger(program.debug)
 
