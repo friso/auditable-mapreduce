@@ -59,7 +59,7 @@ function Sandbox(uuid, user, svnRepo, svnRevision) {
 	}
 	
 	this.cleanup = function(callback) {
-		// removeRecursively(self.getDir(), {}, callback)
+		removeRecursively(self.getDir(), {}, callback)
 	}
 	
 	this.getDir = function() {
