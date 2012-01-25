@@ -28,6 +28,7 @@ require('../auditlog').createAuditlog(function(auditlogger) {
 if (process.getuid() == 0) {
 	if (program.username) {
 		process.setuid(program.username)
+		process.setgid(program.username)
 	} else {
 		LOG.error('Did not receive a UID to change privilege level down to. Not running as root. Exiting...')
 		process.exit(2)
