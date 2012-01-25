@@ -19,6 +19,8 @@ function Sandbox(uuid, user, svnRepo, svnRevision) {
 		fs.mkdir(self.getDir(), '0777', function(err) {
 			console.log(self.getDir())
 			console.log(err)
+			console.log(process.getguid())
+			console.log(process.getgid())
 			
 			childproc.execFile(
 				'/usr/bin/svn', 
