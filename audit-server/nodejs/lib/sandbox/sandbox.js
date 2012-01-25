@@ -19,7 +19,11 @@ function Sandbox(uuid, user, svnRepo, svnRevision) {
 			childproc.execFile(
 				'/usr/bin/svn', 
 				['checkout', self.svnRepo, self.getDir() + '/checkout'],
-				{ "cwd" : self.getDir() }
+				{ "cwd" : self.getDir() },
+				function(error, stdout, stderr) {
+					LOG.debug("svn stdout => " + stdout)
+					LOG.debug("svn stderr => " + stderr)
+				}
 			).on('exit', handleCheckoutReady)
 		})
 	
