@@ -2,12 +2,12 @@ var sandbox = require('../../lib/sandbox')
 var fs = require('fs')
 var childproc = require('child_process')
 
-var box, user, token, tree
+var box, user, token, rev
 
-function getGitCommitSha(gitDir, callback) {
+function getRevision(svnDir, callback) {
 	childproc.exec(
-		'/usr/bin/git show | grep commit', 
-		{ "cwd" : gitDir },
+		'/usr/bin/svn info | grep Revision', 
+		{ "cwd" : svnDir },
 		function (err, stdout, stderr) {
 			callback(stdout)
 		}
@@ -17,7 +17,7 @@ function getGitCommitSha(gitDir, callback) {
 exports.setUp = function(callback) {
 	user = 'test-user'
 	token = 'UUID1234-TEST-UUID-1234-THISISATESTUUID123'
-	tree = '8e40a45c79ebf9ca36685e2c228254b87f3d67af'
+	rev = '3'
 	global.auditserver = {
 		config : {
 			basedir : __dirname,
@@ -25,7 +25,7 @@ exports.setUp = function(callback) {
 		}
 	}
 	
-	box = sandbox.createSandbox(token, user, __dirname + '/local-git-repo/test-repo.git/', tree)
+	box = sandbox.createSandbox(token, user, 'file://' + __dirname + '/local-svn-repo/test-repo/', rev)
 	callback()
 }
 
@@ -33,7 +33,7 @@ exports.tearDown = function(callback) {
 	box.cleanup(callback)
 }
 
-exports.successfullyCreateAndFillASandboxWithRepoAndTree = function(test){
+exports.successfullyCreateAndFillASandboxWithRepoAndRev = function(test){
 
 	box.build(runAsserts)
 	
@@ -44,18 +44,18 @@ exports.successfullyCreateAndFillASandboxWithRepoAndTree = function(test){
 		fs.stat(auditserver.config.sandboxdir+ '/' + user + '-' + token, function(statErr) {
 			test.equal(statErr, null, 'directory needs to be present!')
 
-			getGitCommitSha(auditserver.config.sandboxdir + '/' + user + '-' + token + '/checkout/', function(gitCommit) {
-				test.equal(gitCommit, 'commit ' + tree + '\n', 'Returned the correct commit Sha')
+			getRevision(auditserver.config.sandboxdir + '/' + user + '-' + token + '/checkout/', function(svnRevision) {
+				test.equal(svnRevision, 'Revision: ' + rev + '\n', 'Returned the correct revision')
 				test.done()
 			})
 		})
 	}
 }
 
-exports.successfullyCreateAndFillASandboxWithRepoAndNoTree = function(test){
+exports.successfullyCreateAndFillASandboxWithRepoAndNoRevision = function(test){
 
-	box.gitTree = undefined
-	var expectedCommitSha = '43cb32934458101b1531d079f54b58aee1ef940b'
+	box.svnRevision = undefined
+	var expectedRevision = '3'
 	box.build(runAsserts)
 	
 	function runAsserts(err) {
@@ -65,32 +65,32 @@ exports.successfullyCreateAndFillASandboxWithRepoAndNoTree = function(test){
 		fs.stat(auditserver.config.sandboxdir+ '/' + user + '-' + token, function(statErr) {
 			test.equal(statErr, null, 'directory needs to be present!')
 
-			getGitCommitSha(auditserver.config.sandboxdir + '/' + user + '-' + token + '/checkout/', function(gitCommit) {
-			test.equal(gitCommit, 'commit ' + expectedCommitSha + '\n', 'Returned the correct commit Sha')
+			getRevision(auditserver.config.sandboxdir + '/' + user + '-' + token + '/checkout/', function(svnRevision) {
+			test.equal(svnRevision, 'Revision: ' + expectedRevision + '\n', 'Returned the correct revision')
 				test.done()
 			})
 		})
 	}
 }
 
-exports.shouldFailOnUnknownGitUrlWhileCreatingASandbox = function(test) {
-	box.gitRepo = __dirname + '/local-git-repo/not-there.git/'
+exports.shouldFailOnUnknownSvnUrlWhileCreatingASandbox = function(test) {
+	box.svnRepo = __dirname + '/local-svn-repo/not-there/'
 	box.build(runAsserts)
 	
 	function runAsserts(err) {
 	    test.expect(1)
-		test.deepEqual(err, { code: 128, msg: 'git clone failed.' })
+		test.deepEqual(err, { code: 1, msg: 'svn checkout failed.' })
 		test.done()
 	}
 }
 
-exports.shouldFailOnUnknownTreeWhileCreatingASandbox = function(test) {
-	box.gitTree = '43cb32912345671b1531d079f54b58aee1ef940b'
+exports.shouldFailOnUnknownRevisionWhileCreatingASandbox = function(test) {
+	box.svnRevision = '42'
 	box.build(runAsserts)
 	
 	function runAsserts(err) {
 	    test.expect(1)
-		test.deepEqual(err, { code: 128, msg: 'git checkout failed.' })
+		test.deepEqual(err, { code: 1, msg: 'svn switch failed.' })
 		test.done()
 	}
 }

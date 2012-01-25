@@ -2,49 +2,48 @@ var fs = require('fs')
 var childproc = require('child_process')
 var removeRecursively = require('rimraf')
 
-module.exports.createSandbox = function(uuid, user, gitRepo, gitTree) {
-	return new Sandbox(uuid, user, gitRepo, gitTree)
+module.exports.createSandbox = function(uuid, user, svnRepo, svnRevision) {
+	return new Sandbox(uuid, user, svnRepo, svnRevision)
 }
 
-function Sandbox(uuid, user, gitRepo, gitTree) {
+function Sandbox(uuid, user, svnRepo, svnRevision) {
 	this.uuid = uuid
 	this.user = user
-	this.gitRepo = gitRepo
-	this.gitTree = gitTree
+	this.svnRepo = svnRepo
+	this.svnRevision = svnRevision
 	
 	var self = this
 	
 	this.build = function(callback) {
-		
 		fs.mkdir(self.getDir(), '0777', function(err) {
 			childproc.execFile(
-				'/usr/bin/git', 
-				['clone', self.gitRepo, self.getDir() + '/checkout'],
+				'/usr/bin/svn', 
+				['checkout', self.svnRepo, self.getDir() + '/checkout'],
 				{ "cwd" : self.getDir() }
-			).on('exit', handleGitCloneReady)
+			).on('exit', handleCheckoutReady)
 		})
 	
-		function handleGitCloneReady(code) {
+		function handleCheckoutReady(code) {
 			if (code != 0) {
-				callback({ "code" : code, "msg" : "git clone failed."})
+				callback({ "code" : code, "msg" : "svn checkout failed."})
 				return
 			}
 		
-			if (self.gitTree) {
-				//perform checkout as well after clone
+			if (self.svnRevision) {
+				//perform switch as well after co
 				childproc.execFile(
-					'/usr/bin/git', 
-					['checkout', self.gitTree],
+					'/usr/bin/svn', 
+					['switch', '--revision', self.svnRevision, self.svnRepo],
 					{ "cwd" : self.getDir() + '/checkout' }
-				).on('exit', handleGitCheckoutReady)
+				).on('exit', handleSvnSwitchReady)
 			} else {
 				callback()
 			}
 		}
 	
-		function handleGitCheckoutReady(code) {
+		function handleSvnSwitchReady(code) {
 			if (code != 0) {
-				callback({ "code" : code, "msg" : "git checkout failed."})
+				callback({ "code" : code, "msg" : "svn switch failed."})
 			} else {
 				callback()
 			}

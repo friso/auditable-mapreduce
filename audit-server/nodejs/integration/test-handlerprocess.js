@@ -37,12 +37,15 @@ exports.tearDown = function(callback) {
 }
 
 exports.shouldCreateSandboxAndRunRecipeWhenRequested = function(test) {
+	console.log('STRING:'+'file://' + __dirname + '/../tests/sandbox/local-svn-repo/test-repo/')
+	console.log('REPLACED:'+('file://' + __dirname + '/../tests/sandbox/local-svn-repo/test-repo/').replace('integration/../',''))
+	
 	var request = {
 		type : 'HANDLE_REQUEST',
 		token : '01234567-test-0123-0123',
 		user : 'test-user',
-		gitRepo : __dirname + '/../tests/sandbox/local-git-repo/test-repo.git/',
-		gitTree : '8e40a45c79ebf9ca36685e2c228254b87f3d67af',
+		svnRepo : ('file://' + __dirname + '/../tests/sandbox/local-svn-repo/test-repo/').replace('integration/../',''),
+		svnRevision : '3',
 		recipeName : 'conf-recipe',
 		recipeVariables : { singleParam : 'single', arrayParam : ['I', 'brought', 'multiple.'] },
 		hconf : { 'fs.default.name' : 'hdfs://localhost:8020/' }
@@ -75,7 +78,7 @@ exports.shouldRespondWithRequestEndAndPopulatedErrObjectOnUnbuildableSandbox = f
 		type : 'HANDLE_REQUEST',
 		token : '01234567-test-0123-0123',
 		user : 'test-user',
-		gitRepo : __dirname + '/../test/sandbox/local-git-repo/not-there.git/',
+		svnRepo : ('file://' + __dirname + '/../test/sandbox/local-svn-repo/not-there/').replace('integration/../',''),
 		recipeName : 'test-recipe',
 		recipeVariables : { singleParam : 'single', arrayParam : ['I', 'brought', 'multiple.'] },
 		hconf : { 'fs.default.name' : 'hdfs://localhost:8020/' }
@@ -88,7 +91,7 @@ exports.shouldRespondWithRequestEndAndPopulatedErrObjectOnUnbuildableSandbox = f
 				test.ok(false, 'Should not get any output for non-existing repo.')
 				break
 			case 'REQUEST_END':
-				test.deepEqual(m.err, { code: 128, msg: 'git clone failed.' }, 'Expected error not present or matching!')
+				test.deepEqual(m.err, { code: 1, msg: 'svn checkout failed.' }, 'Expected error not present or matching!')
 				test.done()
 				break
 		}

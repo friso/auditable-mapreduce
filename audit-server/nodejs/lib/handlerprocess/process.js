@@ -65,7 +65,7 @@ function RequestHandler(m) {
 	
 	this.handleRequest = function() {
 		LOG.debug('Creating sandbox for user '+self.message.user)
-		self.box = sandbox.createSandbox(self.message.token, self.message.user, self.message.gitRepo, self.message.gitTree)
+		self.box = sandbox.createSandbox(self.message.token, self.message.user, self.message.svnRepo, self.message.svnRevision)
 		LOG.debug('Building the sandbox')
 		self.box.build(sandboxReady)
 

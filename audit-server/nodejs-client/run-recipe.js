@@ -6,19 +6,19 @@ var http = require('http')
 var logFactory = require('./lib/logging')
 var config = require('./lib/config')
 var hconf = require('./lib/hconf')
-var git = require('./lib/git')
+var svn = require('./lib/svn')
 
 
 program
 	.version('0.0.1')
 	.usage('<options>')
 	.option('-f, --filename <filename>', 'The file containing the recipe and variables to use for running.')
-	.option('-g, --gitdirectory [gitdirectory]', 'The dir containing the git repo and tree.')
+	.option('-s, --svndirectory [svndirectory]', 'The dir containing the svn repo and revision.')
 	.option('-h, --host [host]', 'The host to call the url.')
 	.option('-d, --debug', 'Enable debug logging.')
 	.parse(process.argv)
 
-program.gitdirectory = program.gitdirectory || process.cwd()
+program.svndirectory = program.svndirectory || process.cwd()
 program.host = program.host || 'localhost'
 
 global.LOG = logFactory.getLogger(program.debug)
@@ -27,7 +27,7 @@ checkInput(createauditServerRequest)
 
 function checkInput(callback) {
 	checkFileName(function() {
-		checkGitDirectory(function() {
+		checkSvnDirectory(function() {
 			checkPrivateKeyFile(function() {
 				checkHadoopConfDir(function() {
 					checkAuditserverUser(callback)
@@ -59,21 +59,21 @@ function checkFileName(callback) {
 	}
 }
 
-function checkGitDirectory(callback) {
-	if (!program.gitdirectory) {
-		LOG.error("Program started without gitdirectory parameter")
+function checkSvnDirectory(callback) {
+	if (!program.svndirectory) {
+		LOG.error("Program started without svndirectory parameter")
 		exit(1)
 	} else {
-		fs.stat(program.gitdirectory, function(err, stats) {
+		fs.stat(program.svndirectory, function(err, stats) {
 			if (err) {
-				LOG.error('Error checking '+program.gitdirectory+': '+err)
+				LOG.error('Error checking '+program.svndirectory+': '+err)
 				exit(1)
 			} else {
 				if (!stats.isDirectory()) {
-					LOG.error('Error: '+program.gitdirectory+' is not a Directory')
+					LOG.error('Error: '+program.svndirectory+' is not a Directory')
 					exit(1)
 				} else {
-					LOG.debug('Using '+program.gitdirectory+' as its git directory')
+					LOG.debug('Using '+program.svndirectory+' as its svn directory')
 					callback()
 				}
 			}
@@ -151,22 +151,22 @@ function createauditServerRequest() {
 				} else {
 					var postData = recipeConfig
 					postData['hconf'] = hadoopConfig
-					var	gitinfo = git.createGitInfo(program.gitdirectory)
-			    	gitinfo.getUrl(function(err, gitUrl) {
+					var	svninfo = svn.createSvnInfo(program.svndirectory)
+			    	svninfo.getUrl(function(err, svnUrl) {
 						if (err) {
 							LOG.error(err)
 							exit(1)
 						} else {
-							gitinfo.getTree(function(err, gitTree) {
+							svninfo.getRevision(function(err, revision) {
 								if (err) {
 									LOG.error(err)
 									exit(1)
 								} else {
 									var port = 9090
 									var signedUrlPart = '/recipe/'+recipeConfig.recipe+'/'+process.env.AUDITSERVER_USER+'/run?url=' +
-										encodeURIComponent(gitUrl) +
-										'&tree=' +
-										gitTree
+										encodeURIComponent(svnUrl) +
+										'&rev=' +
+										revision
 									var fullUrl = 'http://' + program.host + ':' + port + signedUrlPart
 									var data = JSON.stringify(postData)
 									var sign = crypto.createSign('RSA-SHA256')

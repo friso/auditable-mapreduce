@@ -28,8 +28,8 @@ exports.successfullCreateAHttpPostRequest = function(test) {
     test.expect(1)
 	
 	var path = '/recipe/test-recipe/test-user/run?url=' +
-	encodeURIComponent(__dirname + '/test-dir.git') +
-	'&tree=7600aec236f786083d18c16141a5eae7774c2a7a'
+	encodeURIComponent('file://' + __dirname + '/test-dir') +
+	'&rev=0'
 	
 	var data = '{"recipe":"test-recipe","recipevars":{"singleParam":"single","arrayParam":["I","brought","multiple."]},"hconf":{"fs.default.name":"hdfs://localhost:9000/","dfs.replication":"1","hadoop.tmp.dir":"/tmp/hadoop","mapred.job.tracker":"master:8021","mapred.map.tasks.speculative.execution":"false","mapred.output.compress":"true"}}' 
 		
@@ -37,7 +37,7 @@ exports.successfullCreateAHttpPostRequest = function(test) {
 
 	handler = cp.fork(__dirname + '/../run-recipe.js',
 						('--filename '+ __dirname + '/test-config.cfg' +
-						 ' --gitdirectory ' + __dirname + '/test-dir').split(' '),
+						 ' --svndirectory ' + __dirname + '/test-dir-co').split(' '),
 						{ cwd: process.cwd(),
 				 		  env: process.env,
 				  	      setsid: false
@@ -57,8 +57,8 @@ exports.successfullCreateALongRunningHttpPostRequest = function(test) {
     test.expect(1)
 	
 	var path = '/recipe/long-running/test-user/run?url=' +
-	encodeURIComponent(__dirname + '/test-dir.git') +
-	'&tree=7600aec236f786083d18c16141a5eae7774c2a7a'
+	encodeURIComponent('file://' + __dirname + '/test-dir') +
+	'&rev=0'
 	
 	var data = '{"recipe":"long-running","recipevars":{"singleParam":"single","arrayParam":["I","brought","multiple."]},"hconf":{"fs.default.name":"hdfs://localhost:9000/","dfs.replication":"1","hadoop.tmp.dir":"/tmp/hadoop","mapred.job.tracker":"master:8021","mapred.map.tasks.speculative.execution":"false","mapred.output.compress":"true"}}' 
 		
@@ -66,7 +66,7 @@ exports.successfullCreateALongRunningHttpPostRequest = function(test) {
 
 	handler = cp.fork(__dirname + '/../run-recipe.js',
 						('--filename '+ __dirname + '/long-config.cfg' +
-						 ' --gitdirectory ' + __dirname + '/test-dir').split(' '),
+						 ' --svndirectory ' + __dirname + '/test-dir-co').split(' '),
 						{ cwd: process.cwd(),
 				 		  env: process.env,
 				  	      setsid: false

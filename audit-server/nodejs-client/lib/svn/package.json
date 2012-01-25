@@ -1,0 +1,4 @@
+{
+	"name":"svn",
+	"main":"./svn-info.js"
+}

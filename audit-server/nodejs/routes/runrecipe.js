@@ -15,8 +15,8 @@ function RecipeRunner(request, response) {
 	this.response = response
 	this.token = undefined
 	this.user = undefined
-	this.gitRepo = undefined
-	this.gitTree = undefined
+	this.svnRepo = undefined
+	this.svnRevision = undefined
 	this.recipeName = undefined
 	this.recipeVariables = undefined
 	this.config = undefined
@@ -55,8 +55,8 @@ function RecipeRunner(request, response) {
 			req.on('end' , function() {
 				self.url = req.url
 				self.user = req.params['user'] || ''
-				self.gitRepo = req.query['url'] || ''
-				self.gitTree = req.query['tree'] || ''
+				self.svnRepo = req.query['url'] || ''
+				self.svnRevision = req.query['revision'] || ''
 				self.recipeName = req.params['recipe'] || ''
 				self.requestData = d
 				var dataObject = JSON.parse(self.requestData)
@@ -91,7 +91,7 @@ function RecipeRunner(request, response) {
 				self.emit('notverified', 400, 'Request body contains invalid or missing data.')
 			} else if (!self.config || self.config == null || self.config.length === 0) {
 				self.emit('notverified', 400, 'Request body contains invalid or missing data.')
-			} else if (!self.gitRepo || self.gitRepo == null || self.gitRepo.length === 0) {
+			} else if (!self.svnRepo || self.svnRepo == null || self.svnRepo.length === 0) {
 				self.emit('notverified', 400, 'Missing request parameter.')
 			} else {
 				fs.stat(auditserver.config.recipedir + '/' + self.recipeName, function(err) {
@@ -148,8 +148,8 @@ function RecipeRunner(request, response) {
 				type : 'HANDLE_REQUEST',
 				token : self.token,
 				user : self.user,
-				gitRepo : self.gitRepo,
-				gitTree : self.gitTree,
+				svnRepo : self.svnRepo,
+				svnRevision : self.svnRevision,
 				recipeName : self.recipeName,
 				recipeVariables : self.recipeVariables,
 				hconf : self.config

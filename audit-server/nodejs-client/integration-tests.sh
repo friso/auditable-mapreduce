@@ -1,9 +1,9 @@
 #!/bin/bash
 
 MYDIR=`pwd`"/"$(dirname $0)
-rm -rf $MYDIR/integration/test-dir/
+rm -rf $MYDIR/integration/test-dir-co/
 cd $MYDIR/integration
-git clone test-dir.git
+svn checkout file://$MYDIR/integration/test-dir ./test-dir-co
 
 cd $MYDIR
 
@@ -17,6 +17,6 @@ for i in integration/test-*.js; do
 
 done
 
-rm -rf $MYDIR/integration/test-dir/
+rm -rf $MYDIR/integration/test-dir-co/
 
 exit $FAILS
