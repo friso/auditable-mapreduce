@@ -6,11 +6,6 @@ var logFactory = require('../logging')
 
 global.auditserver = {}
 
-if (!process.send) {
-	LOG.error('Should be run as child process of the audit server. Do not run standalone.')
-	process.exit(1)
-}
-
 var program = require('commander')
 program
 	.version('0.0.1')
@@ -19,11 +14,16 @@ program
 	.option('-d, --debug', 'Enable debug logging')
 	.parse(process.argv)
 
-global.LOG = logFactory.getLogger(program.debug)
+global.LOG = logFactory.getLogger(true, program.debug)
 
 require('../auditlog').createAuditlog(function(auditlogger) {
 	auditserver['auditlog'] = auditlogger
 })
+
+if (!process.send) {
+	LOG.error('Should be run as child process of the audit server. Do not run standalone.')
+	process.exit(1)
+}
 
 if (process.getuid() == 0) {
 	if (program.username) {

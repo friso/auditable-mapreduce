@@ -17,7 +17,11 @@ var customLevels = {
 	}
 }
     
-exports.getLogger = function(withDebug) {
+exports.getLogger = function(forUser, withDebug) {
+	var logdir = '/var/log/auditserver'
+	if (forUser) {
+		logdir += '/userlogs'
+	}
  	var logger = new (winston.Logger)({
     	transports: [
 			new (winston.transports.Console)({colorize:true, timestamp: true})
@@ -28,7 +32,7 @@ exports.getLogger = function(withDebug) {
 			new (winston.transports.Console)({timestamp: true}),
       		new winston.transports.File({ 
       			colorize: false,
-      			filename: '/var/log/auditserver/auditserver-'+process.pid+'-exceptions.log',
+      			filename: logdir + '/auditserver-'+process.pid+'-exceptions.log',
 				maxsize: 1024 * 1024 * 10,
 				maxFiles: 10,
 				json : false,
@@ -43,7 +47,7 @@ exports.getLogger = function(withDebug) {
 		logger.add(winston.transports.File,{
     	    level: 'trace',
         	colorize: true,
-			filename: '/var/log/auditserver/auditserver-'+process.pid+'-debug.log',
+			filename: logdir + '/auditserver-'+process.pid+'-debug.log',
 			maxsize: 1024 * 1024 * 10,
 			maxFiles: 10,
 			json : false,

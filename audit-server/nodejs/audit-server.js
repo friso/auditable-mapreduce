@@ -28,7 +28,7 @@ var bd = program.basedir || __dirname + '/..'
 
 var numberOfChildProcessesThatAreStillInitializing = 0
 
-global.LOG = logFactory.getLogger(program.debug)
+global.LOG = logFactory.getLogger(false,program.debug)
 
 global.auditserver = {
 	config : {
@@ -169,7 +169,8 @@ function populateChildren(files, asRoot) {
 			}
 			var p = cp.fork(
 				__dirname + '/lib/handlerprocess/process.js', 
-				args.split(' '))
+				args.split(' ')
+			)
 			p.on('message', new MessageHandler(usr).handleChildProcessMessage)
 			p.on('exit', stopAuditServerWhenChildExits)
 			auditserver.children[usr] = p
