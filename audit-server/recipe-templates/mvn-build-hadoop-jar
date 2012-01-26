@@ -1,2 +1,5 @@
+set +e
+export HADOOP_CONF_DIR="$PWD/hconf"
+cd checkout
 mvn clean install
 hadoop jar target/<%=jarFile%> <%=args.join(' ')%>
