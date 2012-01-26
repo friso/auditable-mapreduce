@@ -20,12 +20,12 @@ exports.successfullyCreateAHconfObjectFromXML = function(test){
     
     function runAsserts(err, configObject) {
 		test.equal(err, null, 'No error needs to be present')
-		test.equal(configObject['fs.default.name'], 'hdfs://localhost:9000/', 'Defaultname must be hdfs://localhost:9000/')
-		test.equal(configObject['dfs.replication'], '1', 'Replication must be 1')
-		test.equal(configObject['hadoop.tmp.dir'], '/tmp/hadoop', 'tmpdir must be /tmp/hadoop')
-		test.equal(configObject['mapred.job.tracker'], 'master:8021', 'Job tracker must be master:8021')
-		test.equal(configObject['mapred.map.tasks.speculative.execution'], 'false', 'speculative exec must be false')
-		test.equal(configObject['mapred.output.compress'], 'true', 'Outputcompression must be true')
+		test.equal(configObject.core['fs.default.name'], 'hdfs://localhost:9000/', 'Defaultname must be hdfs://localhost:9000/')
+		test.equal(configObject.hdfs['dfs.replication'], '1', 'Replication must be 1')
+		test.equal(configObject.hdfs['hadoop.tmp.dir'], '/tmp/hadoop', 'tmpdir must be /tmp/hadoop')
+		test.equal(configObject.mapred['mapred.job.tracker'], 'master:8021', 'Job tracker must be master:8021')
+		test.equal(configObject.mapred['mapred.map.tasks.speculative.execution'], 'false', 'speculative exec must be false')
+		test.equal(configObject.mapred['mapred.output.compress'], 'true', 'Outputcompression must be true')
 	    test.done()
 	}	
 }

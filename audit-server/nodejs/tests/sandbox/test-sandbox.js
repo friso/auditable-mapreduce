@@ -4,6 +4,15 @@ var childproc = require('child_process')
 
 var box, user, token, rev
 
+global.LOG = new function() {
+	this.log = function(string) {}
+	this.info = function(string) {}
+	this.warn = function(string) {}
+	this.debug = function(string) {}
+	this.trace = function(string) {}
+	this.error = function(string) {}
+}
+
 function getRevision(svnDir, callback) {
 	childproc.exec(
 		'/usr/bin/svn info | grep Revision', 

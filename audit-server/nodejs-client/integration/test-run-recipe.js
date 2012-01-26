@@ -31,7 +31,7 @@ exports.successfullCreateAHttpPostRequest = function(test) {
 	encodeURIComponent('file://' + __dirname + '/test-dir') +
 	'&rev=0'
 	
-	var data = '{"recipe":"test-recipe","recipevars":{"singleParam":"single","arrayParam":["I","brought","multiple."]},"hconf":{"fs.default.name":"hdfs://localhost:9000/","dfs.replication":"1","hadoop.tmp.dir":"/tmp/hadoop","mapred.job.tracker":"master:8021","mapred.map.tasks.speculative.execution":"false","mapred.output.compress":"true"}}' 
+	var data = '{"recipe":"test-recipe","recipevars":{"singleParam":"single","arrayParam":["I","brought","multiple."]},"hconf":{"core":{"fs.default.name":"hdfs://localhost:9000/"},"hdfs":{"dfs.replication":"1","hadoop.tmp.dir":"/tmp/hadoop"},"mapred":{"mapred.job.tracker":"master:8021","mapred.map.tasks.speculative.execution":"false","mapred.output.compress":"true"}}}' 
 		
     var expectedUrl = 'curl  -H \'X-AuditSignature:' + getSignature(path + data) + '\' -d \'' + data + '\' \'http://localhost:9090' + path + '\''
 
@@ -60,7 +60,7 @@ exports.successfullCreateALongRunningHttpPostRequest = function(test) {
 	encodeURIComponent('file://' + __dirname + '/test-dir') +
 	'&rev=0'
 	
-	var data = '{"recipe":"long-running","recipevars":{"singleParam":"single","arrayParam":["I","brought","multiple."]},"hconf":{"fs.default.name":"hdfs://localhost:9000/","dfs.replication":"1","hadoop.tmp.dir":"/tmp/hadoop","mapred.job.tracker":"master:8021","mapred.map.tasks.speculative.execution":"false","mapred.output.compress":"true"}}' 
+	var data = '{"recipe":"long-running","recipevars":{"singleParam":"single","arrayParam":["I","brought","multiple."]},"hconf":{"core":{"fs.default.name":"hdfs://localhost:9000/"},"hdfs":{"dfs.replication":"1","hadoop.tmp.dir":"/tmp/hadoop"},"mapred":{"mapred.job.tracker":"master:8021","mapred.map.tasks.speculative.execution":"false","mapred.output.compress":"true"}}}' 
 		
     var expectedUrl = 'curl  -H \'X-AuditSignature:' + getSignature(path + data) + '\' -d \'' + data + '\' \'http://localhost:9090' + path + '\''
 

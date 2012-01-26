@@ -24,10 +24,11 @@ function HadoopConfig(dirname) {
 						var data = fs.readFileSync(self.dirname + '/' + file)
 						var xmlDoc = libxmljs.parseXmlString(data.toString())
 						var configuration = xmlDoc.root()
+						var subconfig = config[file.replace('-site.xml','')] = {}
 
 						var properties = configuration.find('//property')
 						properties.forEach(function(prop) {
-							config[prop.get('name').text()] = prop.get('value').text()
+							subconfig[prop.get('name').text()] = prop.get('value').text()
 						})
 					})
 					callback(null, config)

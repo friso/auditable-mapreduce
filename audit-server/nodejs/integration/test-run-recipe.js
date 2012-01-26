@@ -49,7 +49,11 @@ exports.shouldRunCorrectRecipe = function(test) {
 	
 	var data = {
 		recipevars : { singleParam : 'single', arrayParam : ['I', 'brought', 'multiple.'] },
-		hconf : { 'fs.default.name' : 'hdfs://localhost:8020/' }
+		hconf : {
+			core : {
+				'fs.default.name' : 'hdfs://localhost:8020/' 
+			}
+		}
 	}
 	
 	addSignature(options, JSON.stringify(data))
@@ -75,7 +79,11 @@ exports.shouldRespondWithBadRequestOnMissingHeader = function(test) {
 	
 	var data = {
 		recipevars : { singleParam : 'single', arrayParam : ['I', 'brought', 'multiple.'] },
-		hconf : { 'fs.default.name' : 'hdfs://localhost:8020/' }
+		hconf : { 
+			core : {
+				'fs.default.name' : 'hdfs://localhost:8020/' 
+			}
+		}
 	}
 		
 	function runAsserts(res, resData) {
@@ -99,7 +107,11 @@ exports.shouldRespondWithBadRequestOnWrongSignature = function(test) {
 	
 	var data = {
 		recipevars : { singleParam : 'single', arrayParam : ['I', 'brought', 'multiple.'] },
-		hconf : { 'fs.default.name' : 'hdfs://localhost:8020/' }
+		hconf : { 
+			core : {
+				'fs.default.name' : 'hdfs://localhost:8020/' 
+			}
+		}
 	}
 	
 	addSignature(options, JSON.stringify(data))
@@ -127,7 +139,11 @@ exports.shouldRespondWithBadRequestOnMissingData = function(test) {
 	}
 	
 	var data = {
-		hconf : { 'fs.default.name' : 'hdfs://localhost:8020/' }
+		hconf : { 
+			core : {
+				'fs.default.name' : 'hdfs://localhost:8020/' 
+			}
+		}
 	}
 	
 	addSignature(options, JSON.stringify(data))
@@ -153,7 +169,11 @@ exports.shouldRespondWithBadRequestOnInvalidData = function(test) {
 	
 	var data = {
 		recipevars : [],
-		hconf : { 'fs.default.name' : 'hdfs://localhost:8020/' }
+		hconf : { 
+			core : {
+				'fs.default.name' : 'hdfs://localhost:8020/' 
+			}
+		}
 	}
 	
 	addSignature(options, JSON.stringify(data))
@@ -179,7 +199,11 @@ exports.shouldRespondWithBadRequestOnInvalidQuery = function(test) {
 	
 	var data = {
 		recipevars : {},
-		hconf : { 'fs.default.name' : 'hdfs://localhost:8020/' }
+		hconf : { 
+			core : {
+				'fs.default.name' : 'hdfs://localhost:8020/' 
+			}
+		}
 	}
 	
 	addSignature(options, JSON.stringify(data))
@@ -205,7 +229,11 @@ exports.shouldRespondWithNotFoundOnUnknownUser = function(test) {
 	
 	var data = {
 		recipevars : { singleParam : 'single', arrayParam : ['I', 'brought', 'multiple.'] },
-		hconf : { 'fs.default.name' : 'hdfs://localhost:8020/' }
+		hconf : { 
+			core : {
+				'fs.default.name' : 'hdfs://localhost:8020/' 
+			}
+		}
 	}
 	
 	addSignature(options, JSON.stringify(data))
@@ -231,7 +259,11 @@ exports.shouldRespondWithNotFoundOnUnknownRecipe = function(test) {
 	
 	var data = {
 		recipevars : { singleParam : 'single', arrayParam : ['I', 'brought', 'multiple.'] },
-		hconf : { 'fs.default.name' : 'hdfs://localhost:8020/' }
+		hconf : { 
+			core : {
+				'fs.default.name' : 'hdfs://localhost:8020/' 
+			}
+		}
 	}
 	
 	addSignature(options, JSON.stringify(data))
@@ -257,7 +289,11 @@ exports.shouldRespondWithInternalServerErrorOnNonExistingOsUser = function(test)
 	
 	var data = {
 		recipevars : { singleParam : 'single', arrayParam : ['I', 'brought', 'multiple.'] },
-		hconf : { 'fs.default.name' : 'hdfs://localhost:8020/' }
+		hconf : { 
+			core : {
+				'fs.default.name' : 'hdfs://localhost:8020/' 
+			}
+		}
 	}
 	
 	addSignature(options, JSON.stringify(data))

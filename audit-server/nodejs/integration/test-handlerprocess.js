@@ -45,7 +45,11 @@ exports.shouldCreateSandboxAndRunRecipeWhenRequested = function(test) {
 		svnRevision : '3',
 		recipeName : 'conf-recipe',
 		recipeVariables : { singleParam : 'single', arrayParam : ['I', 'brought', 'multiple.'] },
-		hconf : { 'fs.default.name' : 'hdfs://localhost:8020/' }
+		hconf : {
+			core : {
+				'fs.default.name' : 'hdfs://localhost:8020/' 
+			}
+		}
 	}
 
 	var output = ''
@@ -78,7 +82,11 @@ exports.shouldRespondWithRequestEndAndPopulatedErrObjectOnUnbuildableSandbox = f
 		svnRepo : ('file://' + __dirname + '/../test/sandbox/local-svn-repo/not-there/').replace('integration/../',''),
 		recipeName : 'test-recipe',
 		recipeVariables : { singleParam : 'single', arrayParam : ['I', 'brought', 'multiple.'] },
-		hconf : { 'fs.default.name' : 'hdfs://localhost:8020/' }
+		hconf : {
+			core : {
+				'fs.default.name' : 'hdfs://localhost:8020/' 
+			}
+		}
 	}
 	
 	test.expect(1)

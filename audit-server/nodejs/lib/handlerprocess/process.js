@@ -82,9 +82,21 @@ function RequestHandler(m) {
 					if (err) {
 						sendError(err)
 					} else {
-						self.message.hconf['auditable.mapreduce.sessionToken'] = self.message.token
+						self.message.hconf.core['auditable.mapreduce.sessionToken'] = self.message.token
 						LOG.debug('Creating a hadoop configuration in the sandbox')
-						hconf.writeHadoopConfiguration(self.message.hconf, self.box.getDir() + '/hconf/core-site.xml', hconfReady)
+						hconf.writeHadoopConfiguration(self.message.hconf.core, self.box.getDir() + '/hconf/core-site.xml', function(err) {
+							if (err) { 
+								sendError(err) 
+							} else {
+								hconf.writeHadoopConfiguration(self.message.hconf.mapred, self.box.getDir() + '/hconf/mapred-site.xml', function(err) {
+									if (err) { 
+										sendError(err) 
+									} else {
+										hconf.writeHadoopConfiguration(self.message.hconf.hdfs, self.box.getDir() + '/hconf/hdfs-site.xml', hconfReady)
+									}
+								})
+							}
+						})
 					}
 				})
 			}
