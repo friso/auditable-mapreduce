@@ -87,7 +87,7 @@ function ChallengeRunner(req, res) {
 		function searchSandbox(mismatchingSha1InWhitelist) {
 			var foundFiles = []
 			findit.find(self.sandboxdir, function(name) {
-				if (endsWith(name, self.jarname)) {
+				if (endsWith(name, '.jar')) {
 					foundFiles.push(name)
 				}
 			}).on('end', handleFiles)
@@ -111,6 +111,8 @@ function ChallengeRunner(req, res) {
 					createFileSha1(foundFiles.pop(), function(hash) {
 						if (hash == self.sha1) {
 							replyOk('Found in sandbox.')
+						} else {
+							process.nextTick(handleFiles)
 						}
 					})
 				}
