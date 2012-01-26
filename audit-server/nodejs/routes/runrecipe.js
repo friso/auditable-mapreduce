@@ -170,7 +170,7 @@ function RecipeRunner(request, response) {
 
 		function processOutput(message) {
 			if (message.err) {
-				self.response.write(message.err)
+				self.response.write(JSON.stringify(message.err))
 			}
 			if (message.out) {
 				self.response.write(message.out)
