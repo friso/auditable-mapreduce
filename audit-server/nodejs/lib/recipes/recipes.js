@@ -4,22 +4,23 @@ var childproc = require('child_process')
 var fs = require('fs')
 var templater = require('node-template')
 
-module.exports.createRecipe = function(user, token, templateFilename, templateVars, workingDir, shellCommand) {
-	return new Recipe(user, token, templateFilename, templateVars, workingDir, shellCommand)
+module.exports.createRecipe = function(user, token, templateFilename, templateVars, workingDir, shellCommand, shellArgs) {
+	return new Recipe(user, token, templateFilename, templateVars, workingDir, shellCommand, shellArgs)
 }
 
-function Recipe(user, token, templateFilename, templateVars, workingDir, shellCommand) {
+function Recipe(user, token, templateFilename, templateVars, workingDir, shellCommand, shellArgs) {
 	this.user = user
 	this.token = token
 	this.template = templater.create(fs.readFileSync(templateFilename).toString('utf8'))
 	this.templateVars = templateVars
 	this.cwd = workingDir
 	this.command = shellCommand
+	this.commandArgs = shellArgs || []
 	
 	var self = this
 	
 	this.run = function(callback) {
-		var proc = childproc.spawn(self.command, [], { "cwd":self.cwd })
+		var proc = childproc.spawn(self.command, self.commandArgs, { "cwd":self.cwd })
 		proc.on('exit', 
 			function(code, sig) {
 				if (code == 0) {

@@ -111,7 +111,7 @@ function RequestHandler(m) {
 					self.message.token,
 					auditserver.config.recipedir + '/' + self.message.recipeName, 
 					self.message.recipeVariables, 
-					self.box.getDir(), '/bin/bash')
+					self.box.getDir(), '/bin/bash', ['-l'])
 			
 				recipe.on('output', function(o) {
 					o.type = 'OUTPUT'
