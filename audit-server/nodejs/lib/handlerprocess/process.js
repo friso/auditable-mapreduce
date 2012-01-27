@@ -14,14 +14,8 @@ program
 	.option('-d, --debug', 'Enable debug logging')
 	.parse(process.argv)
 
-global.LOG = logFactory.getLogger(true, program.debug)
-
-require('../auditlog').createAuditlog(function(auditlogger) {
-	auditserver['auditlog'] = auditlogger
-})
-
 if (!process.send) {
-	LOG.error('Should be run as child process of the audit server. Do not run standalone.')
+	console.error('Should be run as child process of the audit server. Do not run standalone.')
 	process.exit(1)
 }
 
@@ -30,10 +24,16 @@ if (process.getuid() == 0) {
 		process.setgid(program.username)
 		process.setuid(program.username)
 	} else {
-		LOG.error('Did not receive a UID to change privilege level down to. Not running as root. Exiting...')
+		console.error('Did not receive a UID to change privilege level down to. Not running as root. Exiting...')
 		process.exit(2)
 	}
 }
+
+global.LOG = logFactory.getLogger(true, program.debug)
+
+require('../auditlog').createAuditlog(function(auditlogger) {
+	auditserver['auditlog'] = auditlogger
+})
 
 process.on('message', function(m) {
 	switch(m.type) {

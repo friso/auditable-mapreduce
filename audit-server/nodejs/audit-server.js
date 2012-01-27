@@ -12,6 +12,9 @@ var logFactory = require('./lib/logging')
 process.title = 'audit'
 process.chdir(__dirname)
 
+var newmask = 0023;
+process.umask(newmask);
+
 program
 	.version('0.0.1')
 	.usage('<options>')
@@ -27,8 +30,6 @@ program
 var bd = program.basedir || __dirname + '/..'
 
 var numberOfChildProcessesThatAreStillInitializing = 0
-
-global.LOG = logFactory.getLogger(false,program.debug)
 
 global.auditserver = {
 	config : {
@@ -57,7 +58,7 @@ require('./lib/auditlog').createAuditlog(function(auditlogger) {
 	auditserver['auditlog'] = auditlogger
 })
 
-LOG.info('Audit server starting...')
+console.info('Audit server starting...')
 
 var app = module.exports = express.createServer()
 
@@ -93,6 +94,8 @@ if (process.getuid() == 0) {
 	readUserListAndPopulateChildren(false)
 }
 
+global.LOG = logFactory.getLogger(false,program.debug)
+
 function MessageHandler(user) {
 	this.user = user
 	var self = this
@@ -127,7 +130,11 @@ function MessageHandler(user) {
 function startListeningWhenAllChildrenReady() {
 	if (numberOfChildProcessesThatAreStillInitializing === 0) {
 		app.listen(9090);
-		LOG.info('Audit server listening on port '+app.address().port+' in '+app.settings.env+' mode')
+		if (LOG) {
+			LOG.info('Audit server listening on port '+app.address().port+' in '+app.settings.env+' mode')
+		} else {
+			console.log('Audit server listening on port '+app.address().port+' in '+app.settings.env+' mode')
+		}
 
 		if (process.send) {
 			process.send({"status": "running", "port" : app.address().port })
@@ -136,7 +143,11 @@ function startListeningWhenAllChildrenReady() {
 }
 
 function stopAuditServerWhenChildExits() {
-	LOG.error('Child process died, Auditserver must be stopped')
+	if (LOG) {
+		LOG.error('Child process died, Auditserver must be stopped')
+	} else {
+		console.log('Child process died, Auditserver must be stopped')
+	}
 	process.kill()
 }
 
@@ -147,7 +158,11 @@ function endsWith(str, suffix) {
 function readUserListAndPopulateChildren(asRoot) {
 	fs.readdir(auditserver.config.keydir, function(err, files) {
 		if (err) {
-			LOG.error('Could not list files in key directory. Exiting...')
+			if (LOG) {
+				LOG.error('Could not list files in key directory. Exiting...')
+			} else {
+				console.log('Could not list files in key directory. Exiting...')
+			}
 			process.exit(1)
 		}
 		populateChildren(files, asRoot)
