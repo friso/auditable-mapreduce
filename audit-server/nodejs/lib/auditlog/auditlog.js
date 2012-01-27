@@ -20,7 +20,12 @@ function Auditlog(callback) {
        				colorize: false,
 					filename: logDir + '/' + fileName,
 					json : false,
-					timestamp: true
+					timestamp: true,
+					options : { 
+						flags: 'a',
+						encoding: 'utf-8',
+						mode: 0666
+					}
 	   			})
 			],
     		levels : { info: 0 }

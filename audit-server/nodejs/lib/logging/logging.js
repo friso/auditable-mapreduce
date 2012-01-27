@@ -37,7 +37,12 @@ exports.getLogger = function(forUser, withDebug) {
 				maxFiles: 10,
 				json : false,
 				timestamp: true,
-				handleExceptions: true
+				handleExceptions: true,
+				options : { 
+					flags: 'a',
+					encoding: 'utf8',
+					mode: 0666
+				}
       		})
     	],
     	exitOnError: true
@@ -51,8 +56,13 @@ exports.getLogger = function(forUser, withDebug) {
 			maxsize: 1024 * 1024 * 10,
 			maxFiles: 10,
 			json : false,
-			timestamp: true
-	      })
+			timestamp: true,
+			options : { 
+				flags: 'a',
+				encoding: 'utf8',
+				mode: 0666
+			}
+	    })
 	}
 	
 	logger.handleExceptions()
