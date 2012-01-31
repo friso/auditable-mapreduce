@@ -1,8 +1,11 @@
+var fs = require('fs')
+var child_process = require('child_process')
+
 var sandbox = require('../sandbox')
 var hconf = require('../hconf')
-var fs = require('fs')
 var recipes = require('../recipes')
 var logFactory = require('../logging')
+var auditlogging = require('../auditlog')
 
 global.auditserver = {}
 
@@ -21,45 +24,58 @@ if (!process.send) {
 
 if (process.getuid() == 0) {
 	if (program.username) {
-		process.setuid(program.username)
+		child_process.execFile('id -g '+program.username, function(error, stdout, stderr) {
+			if (error) {
+				console.error('Error getting group id for user '+program.username+'; '+error)
+				process.exit(2)
+			} else {
+				process.setgid(stdout)
+				process.setuid(program.username)
+				startProcess()
+			}
+		})
 	} else {
 		console.error('Did not receive a UID to change privilege level down to. Not running as root. Exiting...')
 		process.exit(2)
 	}
+} else {
+	startProcess()
 }
 
-global.LOG = logFactory.getLogger(true, program.debug)
+function startProcess() {
+	global.LOG = logFactory.getLogger(true, program.debug)
 
-require('../auditlog').createAuditlog(function(auditlogger) {
-	auditserver['auditlog'] = auditlogger
-})
+	auditlogging.createAuditlog(function(auditlogger) {
+		auditserver['auditlog'] = auditlogger
+	})
 
-process.on('message', function(m) {
-	switch(m.type) {
-		case 'CONFIGURATION':
-			global.auditserver.config = m.config
-			process.send({
-				type : 'HANDLER_READY'
-			})
+	process.on('message', function(m) {
+		switch(m.type) {
+			case 'CONFIGURATION':
+				global.auditserver.config = m.config
+				process.send({
+					type : 'HANDLER_READY'
+				})
 
-			break
-		case 'CLOSE':
-			process.send({
-				type : 'HANDLER_CLOSED'
-			})
-		case 'HANDLE_REQUEST':
-			var handler = new RequestHandler(m)
-			handler.handleRequest()
-			break
-		default:
-			LOG.error('This should not happen!')
-			break
-	}
-})
+				break
+			case 'CLOSE':
+				process.send({
+					type : 'HANDLER_CLOSED'
+				})
+			case 'HANDLE_REQUEST':
+				var handler = new RequestHandler(m)
+				handler.handleRequest()
+				break
+			default:
+				LOG.error('This should not happen!')
+				break
+		}
+	})
 
-process.send({
-	type : 'HANDLER_READY_FOR_CONFIG'
-})
+	process.send({
+		type : 'HANDLER_READY_FOR_CONFIG'
+	})
+}
 
 function RequestHandler(m) {
 	this.message = m

@@ -70,15 +70,15 @@ exports.shouldRejectUnknownJar = function(test) {
 	var options = {
 		port : serverPort,
 		method: 'GET',
-		path : '/challenge/test-user/bea010bb-58a9-456a-b9bf-c8a495a5a6db/non-existing-jar.jar/a5615894ebbfcf3c56ca003b59cd022c17b0a3aa'
+		path : '/challenge/test-user/bea010bb-58a9-456a-b9bf-c8a495a5a6db/non-existing-jar.jar/a5615894ebbfcf3c56ca003b59cd022c17b0a3ab'
 	}
 		
 	function runAsserts(res, resData) {
 		var resObject = JSON.parse(resData)
 	    test.expect(3)
-		test.equals(res.statusCode, 404, 'Response code != 404')
+		test.equals(res.statusCode, 403, 'Response code != 403')
 		test.equals(resObject.result, 'NOK', 'Response result does not contain NOK')
-		test.equals(resObject.reason, 'Jar file not found in any context.', 'Wrong reason string.')
+		test.equals(resObject.reason, 'Jar SHA1 does not match.', 'Wrong reason string.')
 		test.done()
 	}
 	
