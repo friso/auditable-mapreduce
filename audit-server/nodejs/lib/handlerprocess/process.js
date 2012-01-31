@@ -24,7 +24,7 @@ if (!process.send) {
 
 if (process.getuid() == 0) {
 	if (program.username) {
-		child_process.execFile('/usr/bin/id -g '+program.username, function(error, stdout, stderr) {
+		child_process.execFile('/usr/bin/id', ['-g', program.username], function(error, stdout, stderr) {
 			if (error) {
 				console.error('Error getting group id for user '+program.username+'; '+error)
 				process.exit(2)
