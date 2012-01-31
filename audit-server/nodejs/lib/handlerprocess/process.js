@@ -24,12 +24,13 @@ if (!process.send) {
 
 if (process.getuid() == 0) {
 	if (program.username) {
-		child_process.execFile('/usr/bin/id', ['-g', program.username], function(error, stdout, stderr) {
+		child_process.execFile('/usr/bin/id', ['-gn', program.username], function(error, stdout, stderr) {
 			if (error) {
 				console.error('Error getting group id for user '+program.username+'; '+error)
 				process.exit(2)
 			} else {
-				process.setgid(stdout)
+				var group = stdout.replace('\n','')
+				process.setgid(group)
 				process.setuid(program.username)
 				startProcess()
 			}
