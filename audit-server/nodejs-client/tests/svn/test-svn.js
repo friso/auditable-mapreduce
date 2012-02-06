@@ -13,7 +13,7 @@ exports.successfullyGetALocalSvnUrl = function(test){
 
     test.expect(2)
     
-	svninfo = svn.createSvnInfo(__dirname + '/test-svn-dir/test')
+	svninfo = svn.createSvnInfo(__dirname + '/test-dir-co')
     svninfo.getUrl(runAsserts)
     
     function runAsserts(err, url) {
@@ -27,7 +27,7 @@ exports.successfullyGetASvnRevision = function(test){
 
     test.expect(2)
     
-	svninfo = svn.createSvnInfo(__dirname + '/test-svn-dir/test')
+	svninfo = svn.createSvnInfo(__dirname + '/test-dir-co')
     svninfo.getRevision(runAsserts)
     
     function runAsserts(err, rev) {
@@ -69,7 +69,7 @@ exports.dontGetASvnUrlFromNonExistingDir = function(test){
 
     test.expect(2)
     
-	svninfo = svn.createSvnInfo(__dirname + '/test-non-git-dir/test-dir-not-there')
+	svninfo = svn.createSvnInfo(__dirname + '/test-non-svn-dir/test-dir-not-there')
     svninfo.getUrl(runAsserts)
     
     function runAsserts(err, url) {
@@ -83,7 +83,7 @@ exports.dontGetASvnRevisionFromNonExistingDir = function(test){
 
     test.expect(2)
     
-	svninfo = svn.createSvnInfo(__dirname + '/test-non-git-dir/test-dir-not-there')
+	svninfo = svn.createSvnInfo(__dirname + '/test-non-svn-dir/test-dir-not-there')
     svninfo.getRevision(runAsserts)
     
     function runAsserts(err, rev) {
