@@ -34,10 +34,11 @@ exports.shouldAcceptCorrectJarInSandbox = function(test) {
 	
 	function runAsserts(res, resData) {
 		var resObject = JSON.parse(resData)
-	    test.expect(3)
+	    test.expect(4)
 		test.equals(res.statusCode, 200, 'Response code != 200')
 		test.equals(resObject.result, 'OK', 'Response result does not contain OK')
-		test.equals(resObject.reason, 'Found in sandbox.', 'Wrong reason string.')
+		test.equals(resObject.reason, 'Found.', 'Wrong reason string.')
+		test.equals(resObject.matchingJarPath, __dirname + '/sandbox//test-user-bea010bb-58a9-456a-b9bf-c8a495a5a6db/good-jar.jar', 'Wrong matching jar path.')
 		test.done()
 	}
 	
@@ -53,13 +54,11 @@ exports.shouldAcceptWhitelistedJar = function(test) {
 	
 	function runAsserts(res, resData) {
 		var resObject = JSON.parse(resData)
-	    test.expect(3)
+	    test.expect(4)
 		test.equals(res.statusCode, 200, 'Response code != 200')
 		test.equals(resObject.result, 'OK', 'Response result does not contain OK')
-		test.equals(resObject.reason, 'Found in whitelist.', 'Wrong reason string.')
-		
-		fs.unlinkSync(__dirname + '/whitelist/awesome-jar.jar.sha1')
-
+		test.equals(resObject.reason, 'Found.', 'Wrong reason string.')
+		test.equals(resObject.matchingJarPath, __dirname + '/whitelist//awesome-jar.jar', 'Wrong matching jar path.')
 		test.done()
 	}
 	

@@ -47,70 +47,44 @@ function ChallengeRunner(req, res) {
 			if (err) {
 				replyNok(404, 'User or token not found.')
 			} else {
-				//search for jar in whitelist dir
-				fs.stat(auditserver.config.whitelistdir + '/' + self.jarname + '.sha1', handleWhitelistCacheStat)
+				//search for jar in sandbox or whitelist dir
+				searchSandbox()
 			}
 		}
 		
-		function handleWhitelistCacheStat(err, stat) {
-			if (err) {
-				fs.stat(auditserver.config.whitelistdir + '/' + self.jarname, handleWhitelistStat)
-			} else {
-				fs.readFile(
-					auditserver.config.whitelistdir + '/' + self.jarname + '.sha1',
-					'ascii',
-					function(err, data) {
-						if (data === self.sha1) {
-							replyOk('Found in whitelist.')
-						}
-					})
-			}
-		}
-		
-		function handleWhitelistStat(err, stat) {
-			if (err) {
-				//search for jar in sandbox
-				searchSandbox(false)
-			} else {
-				createFileSha1(auditserver.config.whitelistdir + '/' + self.jarname, function(result) {
-					fs.writeFile(auditserver.config.whitelistdir + '/' + self.jarname + '.sha1', result, 'ascii')
-					if (result === self.sha1) {
-						replyOk('Found in whitelist.')
-					} else {
-						//search for jar in sandbox
-						searchSandbox(true)
-					}
-				})
-			}
-		}
-		
-		function searchSandbox(mismatchingSha1InWhitelist) {
+		function searchSandbox() {
 			var foundFiles = []
 			findit.find(self.sandboxdir, function(name) {
 				if (endsWith(name, '.jar')) {
 					foundFiles.push(name)
 				}
-			}).on('end', handleFiles)
+			}).on('end', addWhitelistFiles)
+			
+			function addWhitelistFiles() {
+				findit.find(auditserver.config.whitelistdir, function(name) {
+					if (endsWith(name, '.jar')) {
+						foundFiles.push(name)
+					}
+				}).on('end', handleFiles)
+			}
 			
 			function handleFiles() {
 				if (foundFiles.length === 0) {
-					if (mismatchingSha1InWhitelist) {
-						replyNok(403, 'Jar SHA1 does not match.')
-					} else {
-						replyNok(404, 'Jar file not found in any context.')
-					}
+					replyNok(404, 'No jar files found in any context.')
 				} else if (foundFiles.length == 1) {
-					createFileSha1(foundFiles.pop(), function(hash) {
+					var location = foundFiles.pop()
+					createFileSha1(location, function(hash) {
 						if (hash == self.sha1) {
-							replyOk('Found in sandbox.')
+							replyOk(location, 'Found.')
 						} else {
 							replyNok(403, 'Jar SHA1 does not match.')
 						}
 					})
 				} else {
-					createFileSha1(foundFiles.pop(), function(hash) {
+					var location = foundFiles.pop()
+					createFileSha1(location, function(hash) {
 						if (hash == self.sha1) {
-							replyOk('Found in sandbox.')
+							replyOk(location, 'Found.')
 						} else {
 							process.nextTick(handleFiles)
 						}
@@ -153,20 +127,14 @@ function ChallengeRunner(req, res) {
 
 		}
 		
-		function replyOk(why) {
-			self.response.writeHead(200)
-			self.response.write(JSON.stringify({
-				result : 'OK',
-				reason : why
-			}))
-			self.response.end()
-
+		function replyOk(location, why) {
 			var auditlogRecord = {
 		    	user : self.user,
       			token : self.token,
        			identifier : "CHALLENGE-REQUEST",
        			sequence : 2,
        			meta : {
+					matchingJarPath : location,
        				jar : self.jarname,
        				sha1 : self.sha1,
        				result : 'OK',
@@ -175,7 +143,14 @@ function ChallengeRunner(req, res) {
        			}
 			}
 			auditserver.auditlog.log(auditlogRecord)
-
+			
+			self.response.writeHead(200)
+			self.response.write(JSON.stringify({
+				result : 'OK',
+				reason : why,
+				matchingJarPath : location
+			}))
+			self.response.end()
 		}
 		
 		function endsWith(str, suffix) {

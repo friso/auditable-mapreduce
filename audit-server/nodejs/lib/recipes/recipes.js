@@ -23,7 +23,7 @@ function Recipe(user, token, templateFilename, templateVars, workingDir, shellCo
 			if (err) {
 				callback(err)
 			} else {
-				self.template = templater.create(bla)
+				self.template = templater.create(data)
 				runLoadedRecipe(callback)
 			}
 		})
