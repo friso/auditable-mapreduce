@@ -43,9 +43,14 @@ function Auditlog(callback) {
 		if (self.verify(auditlogRecord)) {
 			var message = JSON.stringify(auditlogRecord)
 			if (CONFIG.type === 'FILE') {
-				LOG.debug('Writing auditlog to file ['+message+']')
+				if (LOG) {
+					LOG.debug('Writing auditlog to file ['+message+']')
+				}
 				self.logger.info(message)
 			} else if (CONFIG.type === 'SYSLOG') {
+				if (LOG) {
+					LOG.debug('Writing auditlog to syslog ['+message+']')
+				}
 				self.logger.send(message, 'info')
 			} else {
 				LOG.error('Uninplemented audit type '+CONFIG.type)
