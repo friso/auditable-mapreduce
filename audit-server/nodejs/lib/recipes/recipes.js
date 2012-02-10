@@ -11,7 +11,6 @@ module.exports.createRecipe = function(user, token, templateFilename, templateVa
 function Recipe(user, token, templateFilename, templateVars, workingDir, shellCommand, shellArgs) {
 	this.user = user
 	this.token = token
-	this.template = templater.create(fs.readFileSync(templateFilename).toString('utf8'))
 	this.templateVars = templateVars
 	this.cwd = workingDir
 	this.command = shellCommand
@@ -20,6 +19,17 @@ function Recipe(user, token, templateFilename, templateVars, workingDir, shellCo
 	var self = this
 	
 	this.run = function(callback) {
+		fs.readFile(templateFilename, 'utf8', function(err, data) {
+			if (err) {
+				callback(err)
+			} else {
+				self.template = templater.create(bla)
+				runLoadedRecipe(callback)
+			}
+		})
+	}
+		
+	function runLoadedRecipe(callback) {
 		var proc = childproc.spawn(self.command, self.commandArgs, { "cwd":self.cwd })
 		proc.on('exit', 
 			function(code, sig) {
