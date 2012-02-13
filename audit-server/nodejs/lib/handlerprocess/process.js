@@ -7,6 +7,9 @@ var recipes = require('../recipes')
 var logFactory = require('../logging')
 var auditlogging = require('../auditlog')
 
+var newmask = 0022;
+process.umask(newmask);
+
 global.auditserver = {}
 
 var program = require('commander')

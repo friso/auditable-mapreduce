@@ -137,7 +137,7 @@ function RecipeRunner(request, response) {
 			}
 			auditserver.auditlog.log(auditlogRecord)
 
-			auditserver.emitters[digest].on('output', processOutput).on('end', endOutput)		
+			auditserver.emitters[digest].on('output', processOutput).on('end', endOutput)
 		}
 		
 		function populateSandbox() {
