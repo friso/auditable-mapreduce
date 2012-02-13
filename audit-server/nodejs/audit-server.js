@@ -105,7 +105,8 @@ function MessageHandler(user) {
 			case 'HANDLER_READY_FOR_CONFIG':
 				auditserver.children[self.user].send({
 					type : 'CONFIGURATION',
-					config : auditserver.config
+					config : auditserver.config,
+					node_env : process.env.NODE_ENV
 				})
 				break
 			case 'HANDLER_READY':
