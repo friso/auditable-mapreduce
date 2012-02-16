@@ -5,7 +5,6 @@ var sandbox = require('../sandbox')
 var hconf = require('../hconf')
 var recipes = require('../recipes')
 var logFactory = require('../logging')
-var auditlogging = require('../auditlog')
 
 var newmask = 0022;
 process.umask(newmask);
@@ -49,14 +48,16 @@ if (process.getuid() == 0) {
 function startProcess() {
 	global.LOG = logFactory.getLogger(true, program.debug)
 
-	auditlogging.createAuditlog(function(auditlogger) {
-		auditserver['auditlog'] = auditlogger
-	})
-
 	process.on('message', function(m) {
 		switch(m.type) {
 			case 'CONFIGURATION':
 				global.auditserver.config = m.config
+				process.env.NODE_ENV = m.node_env
+				
+				require('../auditlog').createAuditlog(function(auditlogger) {
+					auditserver['auditlog'] = auditlogger
+				})
+
 				process.send({
 					type : 'HANDLER_READY'
 				})
