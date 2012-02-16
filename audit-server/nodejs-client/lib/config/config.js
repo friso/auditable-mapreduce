@@ -74,14 +74,15 @@ function ConfigEnhancer(data, program) {
     				var k = element.keys.pop()
     				var question = /^\$\(.*\)$/.exec(element.val[k])
     				if (question != null) {
-						if (question.substring(0,1)  == '-') {
+    					var formattedQuestion = question[0].replace(/^\$\(/, '').replace(/\)$/, '')
+						if (formattedQuestion.substring(0,1)  == '-') {
 							// self.program.
 							console.log("Command argument enhancement not yet implemented.")
-						} else if (question.substring(0,1)  == '@') {
-	    					element.val[k] = fs.readFileSync(question.substring(1), 'utf8')
+						} else if (formattedQuestion.substring(0,1)  == '@') {
+	    					element.val[k] = fs.readFileSync(formattedQuestion.substring(1), 'utf8')
 	    					enhanceConfig(stack)
 						} else {
-        					askUser(question[0].replace(/^\$\(/, '').replace(/\)$/, ''))
+        					askUser(formattedQuestion)
 						}
 	    			} else if (typeof element.val[k] == 'object') {
     	    			stack.push({

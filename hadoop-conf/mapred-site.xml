@@ -21,7 +21,7 @@
 	
 	<property>
 	  <name>auditable.mapreduce.auditserverBaseUrl</name>
-	  <value>http://localhost:9090/</value>
+	  <value>http://lsrv3106.linux.rabobank.nl:9090/</value>
 	  <description>The base url for the audit server.</description>
 	</property>
 </configuration>
