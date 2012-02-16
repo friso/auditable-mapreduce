@@ -76,7 +76,11 @@ app.configure('development', function() {
 })
 
 app.configure('production', function() {
-  app.use(express.errorHandler()); 
+	// app.use(express.errorHandler()); 
+	app.error(function(err, req, res, next) {
+		console.log("Unhandler error: " + err)
+		next(err)
+	})
 })
 
 // Main page
