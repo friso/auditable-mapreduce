@@ -2,11 +2,12 @@ var fs=require('fs')
 var program = require('commander')
 
 module.exports.createConfig = function(filename) {
-	return new Config(filename)
+	return new Config(filename, program)
 }
 
-function Config(filename) {
+function Config(filename, program) {
 	this.filename = filename
+	this.program = program
 	
 	var self = this
 	
@@ -15,7 +16,7 @@ function Config(filename) {
 			if (err) {
 				callback(err)
 			} else {
-				ce = new ConfigEnhancer(data)
+				ce = new ConfigEnhancer(data, self.program)
 				ce.process(function(err, config) {
 					callback(err, config)
 				})
@@ -26,9 +27,10 @@ function Config(filename) {
 }
 
 
-function ConfigEnhancer(data) {
+function ConfigEnhancer(data, program) {
 
 	this.data = data.toString()
+	this.program = program
 	
 	var self = this
 	
@@ -72,7 +74,15 @@ function ConfigEnhancer(data) {
     				var k = element.keys.pop()
     				var question = /^\$\(.*\)$/.exec(element.val[k])
     				if (question != null) {
-        				askUser(question[0].replace(/^\$\(/, '').replace(/\)$/, ''))
+						if (question.substring(0,1)  == '-') {
+							// self.program.
+							console.log("Command argument enhancement not yet implemented.")
+						} else if (question.substring(0,1)  == '@') {
+	    					element.val[k] = fs.readFileSync(question.substring(1), 'utf8')
+	    					enhanceConfig(stack)
+						} else {
+        					askUser(question[0].replace(/^\$\(/, '').replace(/\)$/, ''))
+						}
 	    			} else if (typeof element.val[k] == 'object') {
     	    			stack.push({
         	    			keys : Object.keys(element.val[k]),
