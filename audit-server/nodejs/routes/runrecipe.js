@@ -22,6 +22,8 @@ function RecipeRunner(request, response) {
 	this.config = undefined
 	this.requestData = undefined
 	this.signature = undefined
+	this.keepAliveId = undefined
+	this.keepAliveTime = undefined
 	
 	var self = this
 	
@@ -165,10 +167,15 @@ function RecipeRunner(request, response) {
 			auditserver.auditlog.log(auditlogRecord)
 			
 			self.response.writeHead(200, { 'Content-Type':'text/plain'})
+			self.keepAliveTime = Date.now()
+			startKeepAliveHandler(10000)
 			auditserver.children[self.user].send(request)			
 		}
 
 		function processOutput(message) {
+			if (message.out || message.err) {
+				self.keepAliveTime = Date.now()
+			}
 			if (message.err) {
 				self.response.write(message.err)
 			}
@@ -178,6 +185,8 @@ function RecipeRunner(request, response) {
 		}
 
 		function endOutput(message) {
+			stopKeepAliveHandler()
+			
 			processOutput(message)
 			self.response.end()
 
@@ -189,7 +198,33 @@ function RecipeRunner(request, response) {
        			meta : 'Request Finished'
 			}
 			auditserver.auditlog.log(auditlogRecord)
-		}		
+		}
+		
+		function startKeepAliveHandler(delay) {
+			self.keepAliveId = setTimeout(keepAlive, delay)
+		}
+		
+		function keepAlive() {
+			var now = Date.now()
+			if (getKeepAliveTime() + 10000 <= now) {
+				self.response.write('\000')
+				startKeepAliveHandler(10000)
+			} else {
+				var delay = 10000 - (now - getKeepAliveTime())
+				startKeepAliveHandler(delay)
+			}
+		}
+
+		function getKeepAliveTime() {
+			return self.keepAliveTime
+		}
+		
+		function stopKeepAliveHandler() {
+			if (self.keepAliveId) {
+				clearTimeout(self.keepAliveId)
+			}
+		}
+			
 	}
 }
 
