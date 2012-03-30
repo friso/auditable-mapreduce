@@ -90,7 +90,7 @@ function ChallengeRunner(req, res) {
 				}
 			}
 			
-			var walk = function(dir, done) {
+			function walk(dir, done) {
 			  var results = [];
 			  fs.readdir(dir, function(err, list) {
 			    if (err) return done(err);
