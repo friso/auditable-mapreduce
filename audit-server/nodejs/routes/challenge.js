@@ -54,22 +54,20 @@ function ChallengeRunner(req, res) {
 		
 		function searchSandbox() {
 			var foundFiles = []
-			findit.find(self.sandboxdir, function(name) {
-				if (endsWith(name, '.jar')) {
-					foundFiles.push(name)
-				}
-			}).on('end', addWhitelistFiles)
+			walk(self.sandboxdir, addWhitelistFiles)
 			
-			function addWhitelistFiles() {
-				findit.find(auditserver.config.whitelistdir, function(name) {
-					if (endsWith(name, '.jar')) {
-						foundFiles.push(name)
-					}
-				}).on('end', handleFiles)
+			function addWhitelistFiles(err, result) {
+				foundFiles = foundFiles.concat(result)
+				if (err) {
+					replyNok(404, 'No jar files found in any context.')
+				} else {
+					walk(auditserver.config.whitelistdir, handleFiles)					
+				}	
 			}
 			
-			function handleFiles() {
-				if (foundFiles.length === 0) {
+			function handleFiles(err, result) {
+				foundFiles = foundFiles.concat(result)
+				if (err || foundFiles.length === 0) {
 					replyNok(404, 'No jar files found in any context.')
 				} else if (foundFiles.length == 1) {
 					var location = foundFiles.pop()
@@ -91,6 +89,31 @@ function ChallengeRunner(req, res) {
 					})
 				}
 			}
+			
+			var walk = function(dir, done) {
+			  var results = [];
+			  fs.readdir(dir, function(err, list) {
+			    if (err) return done(err);
+			    var pending = list.length;
+			    if (!pending) return done(null, results);
+			    list.forEach(function(file) {
+			      file = dir + '/' + file;
+			      fs.stat(file, function(err, stat) {
+			        if (stat && stat.isDirectory()) {
+			          walk(file, function(err, res) {
+			            results = results.concat(res);
+			            if (!--pending) done(null, results);
+			          });
+			        } else {
+					  if (endsWith(file, '.jar')) {
+			            results.push(file);
+				  	  }
+			          if (!--pending) done(null, results);
+			        }
+			      });
+			    });
+			  });
+			};
 		}
 		
 		function createFileSha1(path, callback) {
