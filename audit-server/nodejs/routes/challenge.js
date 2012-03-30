@@ -57,16 +57,20 @@ function ChallengeRunner(req, res) {
 			walk(self.sandboxdir, addWhitelistFiles)
 			
 			function addWhitelistFiles(err, result) {
-				foundFiles = foundFiles.concat(result)
 				if (err) {
 					replyNok(404, 'No jar files found in any context.')
 				} else {
+					if (result && result.length > 0) {
+						foundFiles = foundFiles.concat(result)
+					}
 					walk(auditserver.config.whitelistdir, handleFiles)					
 				}	
 			}
 			
 			function handleFiles(err, result) {
-				foundFiles = foundFiles.concat(result)
+				if (result && result.length > 0) {
+					foundFiles = foundFiles.concat(result)
+				}
 				if (err || foundFiles.length === 0) {
 					replyNok(404, 'No jar files found in any context.')
 				} else if (foundFiles.length == 1) {
