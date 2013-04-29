@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <property>
+    <name>gate.annotationset.input</name>
+    <value></value>
+    <description>SomeDesc</description>
+  </property>
+  <property>
+    <name>gate.annotationset.output</name>
+    <value>TestAnnotation</value>
+    <description>SomeDesc with newline at the end
+    </description>
+  </property>
+</configuration>
