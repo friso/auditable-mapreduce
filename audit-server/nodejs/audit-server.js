@@ -25,9 +25,13 @@ program
 	.option('-w, --whitelistdir <whitelistdir>', 'Override the default location for keeping whitelisted jars (i.e. trusted jars, always OK to schedule).')
 	.option('-u, --username <username>', 'The UID or username to setuid() to. Will only be used when started as root, ignored otherwise.')
 	.option('-d, --debug', 'Enable debug logging.')
+	.option('-e, --env <env>', 'Set process.env.NODE_ENV.')
 	.parse(process.argv)
 
 var bd = program.basedir || __dirname + '/..'
+
+var env = process.env.NODE_ENV || program.env
+process.env.NODE_ENV=env
 
 var numberOfChildProcessesThatAreStillInitializing = 0
 

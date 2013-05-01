@@ -72,6 +72,18 @@ function ChallengeRunner(req, res) {
 				if (result && result.length > 0) {
 					foundFiles = foundFiles.concat(result)
 				}
+
+				var auditlogRecord = {
+			    	user : self.user,
+    	  			token : self.token,
+       				identifier : "CHALLENGE-REQUEST",
+       				sequence : 3,
+       				meta : {
+       					files : foundFiles
+       				}
+				}
+				auditserver.auditlog.log(auditlogRecord)
+
 				if (err || foundFiles.length === 0) {
 					replyNok(404, 'No jar files found in any context.')
 				} else if (foundFiles.length == 1) {
@@ -85,6 +97,7 @@ function ChallengeRunner(req, res) {
 					})
 				} else {
 					var location = foundFiles.pop()
+
 					createFileSha1(location, function(hash) {
 						if (hash == self.sha1) {
 							replyOk(location, 'Found.')

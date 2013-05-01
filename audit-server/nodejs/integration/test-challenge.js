@@ -8,7 +8,7 @@ exports.setUp = function(callback) {
 	var cp = require('child_process')
 	server = cp.fork(
 		__dirname + '/../audit-server.js', 
-		('-b ' + __dirname).split(' '))
+		('-b ' + __dirname + ' -e ' + process.env.NODE_ENV).split(' '))
 	server.on('message',
 		function(m) {
 			serverPort = m.port
