@@ -2,6 +2,7 @@
     "name": "audit-server"
   , "version": "0.1.0"
   , "private": true
+  , "bundleDependencies" : [ "findit","node-template","express","jade","commander","rimraf","seq","libxmljs","winston","ain2","config" ]
   , "dependencies": {
       "express": "2.5.1"
     , "jade": ">= 0.0.1"
