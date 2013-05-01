@@ -9,10 +9,11 @@
     , "commander": "0.5.1"
     , "rimraf": "1.0.9"
     , "seq" : ">=0.1.7"
-	, "libxmljs": "0.4.3"
+    , "libxmljs": "0.7.1"
     , "winston": "0.5.9"
     , "ain2": "1.0.0"
     , "config" : "0.4.9"
+    , "async" : "0.2.7"
   }
   , "scripts": { "test" : "bash tests.sh"
                , "integration" : "bash integration-tests.sh"

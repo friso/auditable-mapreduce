@@ -48,6 +48,8 @@ public class AuditEnforcingTaskSchedulerWrapper extends TaskScheduler {
 	    }
 		
 		this.configuration = configuration;
+		
+		actualScheduler.setConf(configuration);
 	}
 
 	@Override
@@ -84,23 +86,35 @@ public class AuditEnforcingTaskSchedulerWrapper extends TaskScheduler {
 	public void checkJobSubmission(JobInProgress job) throws IOException {
 		actualScheduler.checkJobSubmission(job);
 		
-		Path file = new Path(job.getJobConf().get("mapred.jar"));
-		FileSystem fs = FileSystem.get(job.getJobConf());
-		FSDataInputStream inputStream = fs.open(file);
+		String jobJarFilename = job.getJobConf().get("mapred.jar");
+		String allJarFilenames = jobJarFilename == null ? "" : jobJarFilename + ":";
+		String cpJarFilenames = job.getJobConf().get("mapred.job.classpath.files");
+		if (cpJarFilenames != null) {
+			allJarFilenames += cpJarFilenames;
+		}
+		String[] allJars = allJarFilenames.split(":");
 		
-		String user = job.getJobConf().get("user.name");
-		String token = job.getJobConf().get("auditable.mapreduce.sessionToken");
-		String sha1 = DigestUtils.shaHex(inputStream);
-		String jarName = file.getName();
-		
-		inputStream.close();
-		
-		if (token == null || user == null) {
-			log.warn("Rejecting job submission without audit token.");
-			throw new IOException("Rejecting job submission without audit token.");
-		} else if (client.challengeServer(user, token, jarName, sha1) == AuditServerResponse.NOK) {
-			log.warn("Job submission failed audit server check. token=" + token + "; JAR name=" + jarName + "; SHA1=" + sha1);
-			throw new IOException("Job submission failed audit server check. token=" + token + "; JAR name=" + jarName + "; SHA1=" + sha1);
+		//for now, challenge that audit server for each jar on the classpath
+		//perhaps we should enable the server to accept challenges for a list of jars
+		for (String someJar : allJars) {
+			Path file = new Path(someJar);
+			FileSystem fs = FileSystem.get(job.getJobConf());
+			FSDataInputStream inputStream = fs.open(file);
+			
+			String user = job.getJobConf().get("user.name");
+			String token = job.getJobConf().get("auditable.mapreduce.sessionToken");
+			String sha1 = DigestUtils.shaHex(inputStream);
+			String jarName = file.getName();
+			
+			inputStream.close();
+			
+			if (token == null || user == null) {
+				log.warn("Rejecting job submission without audit token.");
+				throw new IOException("Rejecting job submission without audit token.");
+			} else if (client.challengeServer(user, token, jarName, sha1) == AuditServerResponse.NOK) {
+				log.warn("Job submission failed audit server check. token=" + token + "; JAR name=" + jarName + "; SHA1=" + sha1);
+				throw new IOException("Job submission failed audit server check. token=" + token + "; JAR name=" + jarName + "; SHA1=" + sha1);
+			}
 		}
 		
 		job.getJobConf().set("auditable.mapreduce.sessionToken", "");
