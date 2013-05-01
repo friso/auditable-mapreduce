@@ -66,7 +66,7 @@ exports.shouldCreateSandboxAndRunRecipeWhenRequested = function(test) {
 					output,
 					'<?xml version="1.0" encoding="UTF-8"?>\n<configuration>\n  <property>\n    <name>fs.default.name</name>\n    <value>hdfs://localhost:8025/</value>\n  </property>\n  <property>\n    <name>auditable.mapreduce.sessionToken</name>\n    <value>01234567-test-0123-0123</value>\n  </property>\n</configuration>\n',
 					'Wrong output from recipe!'+output)
-				test.equal(m.err, null, 'There was an error where there shouldn\'t be!'
+				test.equal(m.err, null, 'There was an error where there shouldn\'t be!')
 				test.done()
 				break;
 		}
