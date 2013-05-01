@@ -20,7 +20,8 @@ function ChallengeRunner(req, res) {
 	var self = this
 	
 	this.run = function() {
-		req.on('end' , function() {
+		// req.on('end' , function() {
+
 			self.user = req.params['user']
 			self.token = req.params['token']
 			self.jarname = req.params['jarname']
@@ -41,7 +42,7 @@ function ChallengeRunner(req, res) {
 
 			//check that user + sandbox combo exists
 			fs.stat(self.sandboxdir, handleSandboxStat)
-		})
+		// })
 		
 		function handleSandboxStat(err, stat) {
 			if (err) {
